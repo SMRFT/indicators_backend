@@ -1004,11 +1004,11 @@ class HandHygenieAudit(models.Model):
     auditBy = models.CharField(max_length=100)
     selectedDate = models.CharField(max_length=100)
     nameOfTheStaff = models.CharField(max_length=100,primary_key=True)
-    area = models.CharField(max_length=100)
-    category = models.CharField(max_length=100)
-    typeOfHandHygiencePractice = models.CharField(max_length=100)
-    fiveMoments = models.CharField(max_length=100)
-    ornamentsIfAny = models.CharField(max_length=100)     
+    area = models.CharField(max_length=1000)
+    category = models.CharField(max_length=1000)
+    typeOfHandHygiencePractice = models.CharField(max_length=1000)
+    fiveMoments = models.CharField(max_length=1000)
+    ornamentsIfAny = models.CharField(max_length=1000)     
     def __str__(self):
         return f"HandHygenieAudit Data: {self.selectedDate}"
 
@@ -1022,8 +1022,8 @@ class TrainingFeedBack(models.Model):
     detailsOfTrainingTopic = models.CharField(max_length=1000)
     trainer = models.CharField(max_length=100)
     nameOfTheTrainer = models.CharField(max_length=1000) 
-    qualityOfAudioVisuals = models.CharField(max_length=100)
-    gainInKnowledge = models.CharField(max_length=100)
+    qualityOfAudioVisuals = models.CharField(max_length=1000)
+    gainInKnowledge = models.CharField(max_length=1000)
     suggestionToImprove = models.CharField(max_length=1000)     
     ifSoPleaseSpecify = models.CharField(max_length=1000)   
     def __str__(self):

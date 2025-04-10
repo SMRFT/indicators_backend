@@ -59,8 +59,4 @@ urlpatterns = [
     path('HandHygieneReport/', get_all_hand_hygiene_data, name ='get_all_hand_hygiene_data'),
     path('TrainingFeedBack/', TrainingFeedBackView, name ='TrainingFeedBackView'),
     path('TrainingFeedBackReport/', get_all_training_feedback, name ='get_all_training_feedback'),
-
-
-
-
 ]

@@ -1148,303 +1148,304 @@ def get_rawdata_model(ward):
         raise ValueError('Ward type not recognized')
 
 
-from collections import defaultdict
-def get_formula_data(request):
-    if request.method == 'GET':
-        year = request.GET.get('year')
-        month = request.GET.get('month')
+# from collections import defaultdict
+# def get_formula_data(request):
+#     if request.method == 'GET':
+#         year = request.GET.get('year')
+#         month = request.GET.get('month')
         
-        # Debugging: Print received parameters
-        # print("Received parameters - year:", year, "month:", month)  
+#         # Debugging: Print received parameters
+#         # print("Received parameters - year:", year, "month:", month)  
         
-        query_params = {}
+#         query_params = {}
 
-        if year and month:
-            # Construct the start and end date for the selected month and year
-            start_date = datetime(int(year), int(month), 1)
-            end_date = start_date.replace(day=1, month=int(month)+1) if int(month) < 12 else start_date.replace(year=int(year)+1, month=1)
-            query_params['selectedDate__gte'] = start_date
-            query_params['selectedDate__lt'] = end_date
+#         if year and month:
+#             # Construct the start and end date for the selected month and year
+#             start_date = datetime(int(year), int(month), 1)
+#             end_date = start_date.replace(day=1, month=int(month)+1) if int(month) < 12 else start_date.replace(year=int(year)+1, month=1)
+#             query_params['selectedDate__gte'] = start_date
+#             query_params['selectedDate__lt'] = end_date
 
-        # Debugging: Print query parameters
-        # print("Query parameters:", query_params)  
+#         # Debugging: Print query parameters
+#         # print("Query parameters:", query_params)  
 
-        if query_params:  
-            try:
-                all_data = []
-                totalNumberOfAdmissions = 0  # Initialize total admissions counter
-                sumOfTimeTakenforInitialAssessment = 0  # Initialize total time taken counter
-                numberOfTestsPerformed = 0  # Initialize total admissions counter
-                numberOfReportingErrors = 0  # Initialize total time taken counter
-                numberOfStaffAdheringToSafety = 0
-                numberOfStaffAudited = 0
-                totalNumberOfOpportunitiesOfMedicationErrors = 0
-                totalNumberOfMedicationErrors = 0
-                numberOfTransfusionReactions = 0
-                numberOfUnitsTransfused = 0
-                actualDeathsInICU = 0
-                predictedDeathsInICU = 0
-                numberOfPatientsWhoDevelopNewOrWorseningOfPressureUlcer = 0
-                totalNumberOfRestraintPatientsDays = 0
-                numberOfReturnsToEmergencyWithin72hoursWithSimilarPresentingComplaints =0
-                numberOfPatientsWhoHaveComeToTheEmergency =0
-                numberOfUrinaryCatheterAssociatedUtisInThatMonth=0
-                numberOfUrinaryCatheterDaysInThatMonth=0
-                numberOfVentilatorAssociatedPneumonia=0
-                numberOfVentilatorDays=0
-                numberCentralLineAssociatedBloodStreamInfectionsInAMonth=0
-                numberOfCentralLineDaysInThatMonth=0
-                numberOfSurgicalSiteInfectionsInAGivenMonth=0
-                numberOfSurgeriesPlannedInTheOt=0
-                sumOfTimeTakenForBloodAndBloodComponents=0
-                totalNumberOfBloodAndBloodComponentsCrossMatchedOrReserved=0
-                numberOfNursingStaff=0
-                numberOfBedsOccupied=0
-                numberOfPatientsDischarged=0
-                sumOfTimeTakenForDischarge=0
-                numberOfMedicalRecords=0
-                numberOfDischarge=0
-                Numberofdeath=0
-                waitingTimeForDiagnostics=0
-                numberOfPatientsReportedInDiagnostics=0
-                sumTotalPatientInTimeForConsultation=0
-                numberOfOutPatients=0
-                numberOfNearMissReported=0
-                numberOfIncidentsReported=0
-                totalNumberOfHandoversDoneAppropriately=0
-                totalNumberOfHandoverOpportunities=0
-                totalNumberOfPrescriptionInCapitalLetters=0
-                totalNumberOfPrescriptionSampled=0
-                numberOfStockOutEmergencyDrugs=0
-                numberOfInPatients=0
-                numberOfPatientsDevelopingAdverseDrugReactions=0
-                numberOfUnplannedReturnToOTOrReexploration=0
-                numberOfSurgeriesWhereTheProcedureWasFollowed=0
-                numberOfSurgeriesPlannedInTheOt=0
-                numberOfPatientsWhoDidReceiveAppropriateProphylacticAntibiotic=0
-                numberOfCasesReScheduledOrCanceled=0
+#         if query_params:  
+#             try:
+#                 all_data = []
+#                 totalNumberOfAdmissions = 0  # Initialize total admissions counter
+#                 sumOfTimeTakenforInitialAssessment = 0  # Initialize total time taken counter
+#                 numberOfTestsPerformed = 0  # Initialize total admissions counter
+#                 numberOfReportingErrors = 0  # Initialize total time taken counter
+#                 numberOfStaffAdheringToSafety = 0
+#                 numberOfStaffAudited = 0
+#                 totalNumberOfOpportunitiesOfMedicationErrors = 0
+#                 totalNumberOfMedicationErrors = 0
+#                 numberOfTransfusionReactions = 0
+#                 numberOfUnitsTransfused = 0
+#                 actualDeathsInICU = 0
+#                 predictedDeathsInICU = 0
+#                 numberOfPatientsWhoDevelopNewOrWorseningOfPressureUlcer = 0
+#                 totalNumberOfRestraintPatientsDays = 0
+#                 numberOfReturnsToEmergencyWithin72hoursWithSimilarPresentingComplaints =0
+#                 numberOfPatientsWhoHaveComeToTheEmergency =0
+#                 numberOfUrinaryCatheterAssociatedUtisInThatMonth=0
+#                 numberOfUrinaryCatheterDaysInThatMonth=0
+#                 numberOfVentilatorAssociatedPneumonia=0
+#                 numberOfVentilatorDays=0
+#                 numberCentralLineAssociatedBloodStreamInfectionsInAMonth=0
+#                 numberOfCentralLineDaysInThatMonth=0
+#                 numberOfSurgicalSiteInfectionsInAGivenMonth=0
+#                 numberOfSurgeriesPlannedInTheOt=0
+#                 sumOfTimeTakenForBloodAndBloodComponents=0
+#                 totalNumberOfBloodAndBloodComponentsCrossMatchedOrReserved=0
+#                 numberOfNursingStaff=0
+#                 numberOfBedsOccupied=0
+#                 numberOfPatientsDischarged=0
+#                 sumOfTimeTakenForDischarge=0
+#                 numberOfMedicalRecords=0
+#                 numberOfDischarge=0
+#                 Numberofdeath=0
+#                 waitingTimeForDiagnostics=0
+#                 numberOfPatientsReportedInDiagnostics=0
+#                 sumTotalPatientInTimeForConsultation=0
+#                 numberOfOutPatients=0
+#                 numberOfNearMissReported=0
+#                 numberOfIncidentsReported=0
+#                 totalNumberOfHandoversDoneAppropriately=0
+#                 totalNumberOfHandoverOpportunities=0
+#                 totalNumberOfPrescriptionInCapitalLetters=0
+#                 totalNumberOfPrescriptionSampled=0
+#                 numberOfStockOutEmergencyDrugs=0
+#                 numberOfInPatients=0
+#                 numberOfPatientsDevelopingAdverseDrugReactions=0
+#                 numberOfUnplannedReturnToOTOrReexploration=0
+#                 numberOfSurgeriesWhereTheProcedureWasFollowed=0
+#                 numberOfSurgeriesPlannedInTheOt=0
+#                 numberOfPatientsWhoDidReceiveAppropriateProphylacticAntibiotic=0
+#                 numberOfCasesReScheduledOrCanceled=0
 
-                # Define a dictionary of model classes
-                model_classes = {
-        'Front Office': FrontOffice,
-        'First Floor': FirstFloor,
-        'First Suit': FirstSuit,
-        'Second Floor': SecondFloor,
-        'Second Suit': SecondSuit,
-        'Third Floor': ThirdFloor,
-        'Lab': Lab,
-        'CT': CT,
-        'MRI': MRI,
-        'X-Ray': Xray,
-        'OT': OT,
-        'MRD': MRD,
-        'MICU': MICU,
-        'NICU': NICU,
-        'SICU': SICU,
-        'Recovery ward': RecoveryWard,
-        'Chemo Ward': ChemoWard,
-        'Physiotherapy': Physiotherapy,
-        'Dialysis': Dialysis,
-        'ER': EmergencyRoom,
-        'OPD':OPD,
-        'OPPharmacy':OPPharmacy
-                }
+#                 # Define a dictionary of model classes
+#                 model_classes = {
+#         'Front Office': FrontOffice,
+#         'First Floor': FirstFloor,
+#         'First Suit': FirstSuit,
+#         'Second Floor': SecondFloor,
+#         'Second Suit': SecondSuit,
+#         'Third Floor': ThirdFloor,
+#         'Lab': Lab,
+#         'CT': CT,
+#         'MRI': MRI,
+#         'X-Ray': Xray,
+#         'OT': OT,
+#         'MRD': MRD,
+#         'MICU': MICU,
+#         'NICU': NICU,
+#         'SICU': SICU,
+#         'Recovery ward': RecoveryWard,
+#         'Chemo Ward': ChemoWard,
+#         'Physiotherapy': Physiotherapy,
+#         'Dialysis': Dialysis,
+#         'ER': EmergencyRoom,
+#         'OPD':OPD,
+#         'OPPharmacy':OPPharmacy
+#                 }
 
-                # Inside the try block
-                for ward, model in model_classes.items():
-                    data = model.objects.filter(**query_params).values()
-                    # print(f"Retrieved data for {ward}:", data)  # Add this line for debugging
-                    all_data.extend(data)
-                    for entry in data:
-                        totalNumberOfAdmissions += int(entry.get('totalNumberOfAdmissions', 0))
-                        sumOfTimeTakenforInitialAssessment += int(entry.get('sumOfTimeTakenforInitialAssessment', 0))
-                        numberOfTestsPerformed += int(entry.get('numberOfTestsPerformed', 0))
-                        numberOfReportingErrors += int(entry.get('numberOfReportingErrors', 0))
-                        numberOfStaffAdheringToSafety += int(entry.get('numberOfStaffAdheringToSafety', 0))
-                        numberOfStaffAudited += int(entry.get('numberOfStaffAudited', 0))
-                        totalNumberOfOpportunitiesOfMedicationErrors += int(entry.get('totalNumberOfOpportunitiesOfMedicationErrors', 0))
-                        totalNumberOfMedicationErrors += int(entry.get('totalNumberOfMedicationErrors', 0))
-                        numberOfTransfusionReactions += int(entry.get('numberOfTransfusionReactions', 0))
-                        numberOfUnitsTransfused += int(entry.get('numberOfUnitsTransfused', 0))
-                        actualDeathsInICU += int(entry.get('actualDeathsInICU', 0))
-                        predictedDeathsInICU += int(entry.get('predictedDeathsInICU', 0))
-                        numberOfPatientsWhoDevelopNewOrWorseningOfPressureUlcer += int(entry.get('numberOfPatientsWhoDevelopNewOrWorseningOfPressureUlcer', 0))
-                        totalNumberOfRestraintPatientsDays += int(entry.get('totalNumberOfRestraintPatientsDays', 0))
-                        numberOfReturnsToEmergencyWithin72hoursWithSimilarPresentingComplaints += int (entry.get('numberOfReturnsToEmergencyWithin72hoursWithSimilarPresentingComplaints',0))
-                        numberOfPatientsWhoHaveComeToTheEmergency += int (entry.get('numberOfPatientsWhoHaveComeToTheEmergency',0))
-                        numberOfUrinaryCatheterAssociatedUtisInThatMonth += int(entry.get('numberOfUrinaryCatheterAssociatedUtisInThatMonth',0))
-                        numberOfUrinaryCatheterDaysInThatMonth += int(entry.get('numberOfUrinaryCatheterDaysInThatMonth',0))
-                        numberOfVentilatorAssociatedPneumonia += int (entry.get('numberOfVentilatorAssociatedPneumonia',0))
-                        numberOfVentilatorDays += int (entry.get('numberOfVentilatorDays',0))
-                        numberOfCentralLineDaysInThatMonth += int(entry.get('numberOfCentralLineDaysInThatMonth',0))
-                        numberCentralLineAssociatedBloodStreamInfectionsInAMonth += int(entry.get('numberCentralLineAssociatedBloodStreamInfectionsInAMonth',0))
-                        numberOfSurgicalSiteInfectionsInAGivenMonth += int(entry.get('numberOfSurgicalSiteInfectionsInAGivenMonth',0))
-                        numberOfSurgeriesPlannedInTheOt += int(entry.get('numberOfSurgeriesPlannedInTheOt',0))
-                        sumOfTimeTakenForBloodAndBloodComponents += int(entry.get("sumOfTimeTakenForBloodAndBloodComponents",0))
-                        totalNumberOfBloodAndBloodComponentsCrossMatchedOrReserved += int(entry.get('totalNumberOfBloodAndBloodComponentsCrossMatchedOrReserved',0))
-                        numberOfNursingStaff += int(entry.get('numberOfNursingStaff',0))
-                        numberOfBedsOccupied += int(entry.get('numberOfBedsOccupied',0))
-                        numberOfPatientsDischarged += int(entry.get('numberOfPatientsDischarged',0))
-                        sumOfTimeTakenForDischarge += int(entry.get('sumOfTimeTakenForDischarge',0))
-                        numberOfMedicalRecords += int (entry.get('numberOfMedicalRecords',0))
-                        numberOfDischarge += int(entry.get('numberOfDischarge',0))
-                        Numberofdeath += int(entry.get('Numberofdeath',0))
-                        waitingTimeForDiagnostics += int(entry.get('waitingTimeForDiagnostics',0))
-                        numberOfPatientsReportedInDiagnostics += int(entry.get('numberOfPatientsReportedInDiagnostics',0))
-                        sumTotalPatientInTimeForConsultation += int(entry.get('sumTotalPatientInTimeForConsultation',0))
-                        numberOfOutPatients += int(entry.get('numberOfOutPatients',0))
-                        numberOfNearMissReported += int(entry.get('numberOfNearMissReported',0))
-                        numberOfIncidentsReported += int (entry.get('numberOfIncidentsReported',0))
-                        totalNumberOfHandoversDoneAppropriately += int((entry.get('totalNumberOfHandoversDoneAppropriately',0)))
-                        totalNumberOfHandoverOpportunities += int(entry.get('totalNumberOfHandoverOpportunities',0))
-                        totalNumberOfPrescriptionInCapitalLetters += int (entry.get('totalNumberOfPrescriptionInCapitalLetters',0))
-                        totalNumberOfPrescriptionSampled += int (entry.get('totalNumberOfPrescriptionSampled',0))
-                        numberOfStockOutEmergencyDrugs += int (entry.get('numberOfStockOutEmergencyDrugs',0))
-                        numberOfPatientsDevelopingAdverseDrugReactions += int(entry.get('numberOfPatientsDevelopingAdverseDrugReactions',0))
-                        numberOfInPatients += int(entry.get('numberOfInPatients',0))
-                        numberOfUnplannedReturnToOTOrReexploration += int(entry.get('numberOfUnplannedReturnToOTOrReexploration',0))
-                        numberOfSurgeriesWhereTheProcedureWasFollowed += int (entry.get('numberOfSurgeriesWhereTheProcedureWasFollowed',0))
-                        numberOfSurgeriesPlannedInTheOt += int(entry.get('numberOfSurgeriesPlannedInTheOt',0))
-                        numberOfPatientsWhoDidReceiveAppropriateProphylacticAntibiotic += int(entry.get('numberOfPatientsWhoDidReceiveAppropriateProphylacticAntibiotic',0))
-                        numberOfCasesReScheduledOrCanceled += int(entry.get('numberOfCasesReScheduledOrCanceled',0))
-                # Debugging: Print retrieved data
-                # print("Retrieved data:", all_data)  
+#                 # Inside the try block
+#                 for ward, model in model_classes.items():
+#                     data = model.objects.filter(**query_params).values()
+#                     # print(f"Retrieved data for {ward}:", data)  # Add this line for debugging
+#                     all_data.extend(data)
+#                     for entry in data:
+#                         totalNumberOfAdmissions += int(entry.get('totalNumberOfAdmissions', 0))
+#                         sumOfTimeTakenforInitialAssessment += int(entry.get('sumOfTimeTakenforInitialAssessment', 0))
+#                         numberOfTestsPerformed += int(entry.get('numberOfTestsPerformed', 0))
+#                         numberOfReportingErrors += int(entry.get('numberOfReportingErrors', 0))
+#                         numberOfStaffAdheringToSafety += int(entry.get('numberOfStaffAdheringToSafety', 0))
+#                         numberOfStaffAudited += int(entry.get('numberOfStaffAudited', 0))
+#                         totalNumberOfOpportunitiesOfMedicationErrors += int(entry.get('totalNumberOfOpportunitiesOfMedicationErrors', 0))
+#                         totalNumberOfMedicationErrors += int(entry.get('totalNumberOfMedicationErrors', 0))
+#                         numberOfTransfusionReactions += int(entry.get('numberOfTransfusionReactions', 0))
+#                         numberOfUnitsTransfused += int(entry.get('numberOfUnitsTransfused', 0))
+#                         actualDeathsInICU += int(entry.get('actualDeathsInICU', 0))
+#                         predictedDeathsInICU += int(entry.get('predictedDeathsInICU', 0))
+#                         numberOfPatientsWhoDevelopNewOrWorseningOfPressureUlcer += int(entry.get('numberOfPatientsWhoDevelopNewOrWorseningOfPressureUlcer', 0))
+#                         totalNumberOfRestraintPatientsDays += int(entry.get('totalNumberOfRestraintPatientsDays', 0))
+#                         numberOfReturnsToEmergencyWithin72hoursWithSimilarPresentingComplaints += int (entry.get('numberOfReturnsToEmergencyWithin72hoursWithSimilarPresentingComplaints',0))
+#                         numberOfPatientsWhoHaveComeToTheEmergency += int (entry.get('numberOfPatientsWhoHaveComeToTheEmergency',0))
+#                         numberOfUrinaryCatheterAssociatedUtisInThatMonth += int(entry.get('numberOfUrinaryCatheterAssociatedUtisInThatMonth',0))
+#                         numberOfUrinaryCatheterDaysInThatMonth += int(entry.get('numberOfUrinaryCatheterDaysInThatMonth',0))
+#                         numberOfVentilatorAssociatedPneumonia += int (entry.get('numberOfVentilatorAssociatedPneumonia',0))
+#                         numberOfVentilatorDays += int (entry.get('numberOfVentilatorDays',0))
+#                         numberOfCentralLineDaysInThatMonth += int(entry.get('numberOfCentralLineDaysInThatMonth',0))
+#                         numberCentralLineAssociatedBloodStreamInfectionsInAMonth += int(entry.get('numberCentralLineAssociatedBloodStreamInfectionsInAMonth',0))
+#                         numberOfSurgicalSiteInfectionsInAGivenMonth += int(entry.get('numberOfSurgicalSiteInfectionsInAGivenMonth',0))
+#                         numberOfSurgeriesPlannedInTheOt += int(entry.get('numberOfSurgeriesPlannedInTheOt',0))
+#                         sumOfTimeTakenForBloodAndBloodComponents += int(entry.get("sumOfTimeTakenForBloodAndBloodComponents",0))
+#                         totalNumberOfBloodAndBloodComponentsCrossMatchedOrReserved += int(entry.get('totalNumberOfBloodAndBloodComponentsCrossMatchedOrReserved',0))
+#                         numberOfNursingStaff += int(entry.get('numberOfNursingStaff',0))
+#                         numberOfBedsOccupied += int(entry.get('numberOfBedsOccupied',0))
+#                         numberOfPatientsDischarged += int(entry.get('numberOfPatientsDischarged',0))
+#                         sumOfTimeTakenForDischarge += int(entry.get('sumOfTimeTakenForDischarge',0))
+#                         numberOfMedicalRecords += int (entry.get('numberOfMedicalRecords',0))
+#                         numberOfDischarge += int(entry.get('numberOfDischarge',0))
+#                         Numberofdeath += int(entry.get('Numberofdeath',0))
+#                         waitingTimeForDiagnostics += int(entry.get('waitingTimeForDiagnostics',0))
+#                         numberOfPatientsReportedInDiagnostics += int(entry.get('numberOfPatientsReportedInDiagnostics',0))
+#                         sumTotalPatientInTimeForConsultation += int(entry.get('sumTotalPatientInTimeForConsultation',0))
+#                         numberOfOutPatients += int(entry.get('numberOfOutPatients',0))
+#                         numberOfNearMissReported += int(entry.get('numberOfNearMissReported',0))
+#                         numberOfIncidentsReported += int (entry.get('numberOfIncidentsReported',0))
+#                         totalNumberOfHandoversDoneAppropriately += int((entry.get('totalNumberOfHandoversDoneAppropriately',0)))
+#                         totalNumberOfHandoverOpportunities += int(entry.get('totalNumberOfHandoverOpportunities',0))
+#                         totalNumberOfPrescriptionInCapitalLetters += int (entry.get('totalNumberOfPrescriptionInCapitalLetters',0))
+#                         totalNumberOfPrescriptionSampled += int (entry.get('totalNumberOfPrescriptionSampled',0))
+#                         numberOfStockOutEmergencyDrugs += int (entry.get('numberOfStockOutEmergencyDrugs',0))
+#                         numberOfPatientsDevelopingAdverseDrugReactions += int(entry.get('numberOfPatientsDevelopingAdverseDrugReactions',0))
+#                         numberOfInPatients += int(entry.get('numberOfInPatients',0))
+#                         numberOfUnplannedReturnToOTOrReexploration += int(entry.get('numberOfUnplannedReturnToOTOrReexploration',0))
+#                         numberOfSurgeriesWhereTheProcedureWasFollowed += int (entry.get('numberOfSurgeriesWhereTheProcedureWasFollowed',0))
+#                         numberOfSurgeriesPlannedInTheOt += int(entry.get('numberOfSurgeriesPlannedInTheOt',0))
+#                         numberOfPatientsWhoDidReceiveAppropriateProphylacticAntibiotic += int(entry.get('numberOfPatientsWhoDidReceiveAppropriateProphylacticAntibiotic',0))
+#                         numberOfCasesReScheduledOrCanceled += int(entry.get('numberOfCasesReScheduledOrCanceled',0))
+#                 # Debugging: Print retrieved data
+#                 # print("Retrieved data:", all_data)  
 
-                # Calculate average time taken for initial assessment per admission
-                average_time_taken = sumOfTimeTakenforInitialAssessment / totalNumberOfAdmissions if totalNumberOfAdmissions > 0 else 0
-                numberOfReportingErrors1 = numberOfReportingErrors / numberOfTestsPerformed if numberOfTestsPerformed > 0 else 0
-                adherencetosafety = numberOfStaffAdheringToSafety / numberOfStaffAudited if numberOfStaffAudited > 0 else 0
-                transfusedreactions = numberOfTransfusionReactions / numberOfUnitsTransfused if numberOfUnitsTransfused > 0 else 0
-                totalNumberOfMedicationErrors = totalNumberOfMedicationErrors / totalNumberOfOpportunitiesOfMedicationErrors if totalNumberOfOpportunitiesOfMedicationErrors > 0 else 0
-                morality_ratio_ICU = actualDeathsInICU / predictedDeathsInICU if predictedDeathsInICU > 0 else 0
-                ulcers_admission = numberOfPatientsWhoDevelopNewOrWorseningOfPressureUlcer / totalNumberOfRestraintPatientsDays if totalNumberOfRestraintPatientsDays  > 0 else 0
-                return_of_emergency = numberOfReturnsToEmergencyWithin72hoursWithSimilarPresentingComplaints/numberOfPatientsWhoHaveComeToTheEmergency if numberOfPatientsWhoHaveComeToTheEmergency >0 else 0
-                catheterassociated_CDC_NHSN= numberOfUrinaryCatheterAssociatedUtisInThatMonth/numberOfUrinaryCatheterDaysInThatMonth if numberOfUrinaryCatheterDaysInThatMonth >0 else 0
-                ventilatorassociated_CDC_NHSN=numberOfVentilatorAssociatedPneumonia/numberOfVentilatorDays if numberOfVentilatorDays > 0 else 0
-                bloodstrea_CDC_NHSN=numberCentralLineAssociatedBloodStreamInfectionsInAMonth / numberOfCentralLineDaysInThatMonth if numberOfCentralLineDaysInThatMonth > 0 else 0
-                surgicalCDCandNHSN=numberOfSurgicalSiteInfectionsInAGivenMonth / numberOfSurgeriesPlannedInTheOt if numberOfSurgeriesPlannedInTheOt > 0 else 0
-                available_transfusion= sumOfTimeTakenForBloodAndBloodComponents / totalNumberOfBloodAndBloodComponentsCrossMatchedOrReserved if totalNumberOfBloodAndBloodComponentsCrossMatchedOrReserved > 0 else 0
-                patient_ratio_icu=numberOfBedsOccupied / numberOfNursingStaff if  numberOfNursingStaff > 0 else 0
-                time_taken_discharge= sumOfTimeTakenForDischarge / numberOfPatientsDischarged if numberOfPatientsDischarged > 0 else 0
-                numberofdischargesanddeaths=(numberOfDischarge + Numberofdeath )
-                incomplete_improper_constent= numberOfMedicalRecords / numberofdischargesanddeaths if numberofdischargesanddeaths >0 else 0
-                waiting_time_diagnostics = waitingTimeForDiagnostics / numberOfPatientsReportedInDiagnostics if numberOfPatientsReportedInDiagnostics >0 else 0
-                time_outpatient_consultation=sumTotalPatientInTimeForConsultation / numberOfOutPatients if numberOfOutPatients  > 0 else 0
-                near_misses=numberOfNearMissReported / numberOfIncidentsReported if numberOfIncidentsReported > 0 else 0
-                handovers_shift_change=totalNumberOfHandoversDoneAppropriately / totalNumberOfHandoverOpportunities if totalNumberOfHandoverOpportunities > 0 else 0                # Construct JSON response
-                medication_prescription_capitals=totalNumberOfPrescriptionInCapitalLetters / totalNumberOfPrescriptionSampled if totalNumberOfPrescriptionSampled >0 else 0
-                stock_outs_emergency_medications= numberOfStockOutEmergencyDrugs / 20 
-                adverse_drug_reaction = numberOfPatientsDevelopingAdverseDrugReactions / numberOfInPatients if numberOfInPatients > 0 else 0
-                unplanned_return_ot=numberOfUnplannedReturnToOTOrReexploration/numberOfSurgeriesWhereTheProcedureWasFollowed if numberOfSurgeriesWhereTheProcedureWasFollowed >0 else 0
-                percentage_of_surgeries=numberOfSurgeriesWhereTheProcedureWasFollowed/numberOfSurgeriesPlannedInTheOt if numberOfSurgeriesPlannedInTheOt>0 else 0
-                percentage_prophylacticAntibiotic=numberOfSurgeriesWhereTheProcedureWasFollowed/numberOfPatientsWhoDidReceiveAppropriateProphylacticAntibiotic if numberOfPatientsWhoDidReceiveAppropriateProphylacticAntibiotic >0 else 0
-                re_scheduling_sugeries=numberOfCasesReScheduledOrCanceled/numberOfSurgeriesWhereTheProcedureWasFollowed if numberOfSurgeriesWhereTheProcedureWasFollowed >0 else 0                
-                response_data = {
-                    # 'data': list(all_data),
-                    'totalNumberOfAdmissions': totalNumberOfAdmissions,
-                    'timeTakenForInitialAssessment': sumOfTimeTakenforInitialAssessment,
-                    'averagetimetakenperadmission': (int(average_time_taken)),
-                    'numberOfTestsPerformed': numberOfTestsPerformed,
-                    'numberOfReportingErrors': numberOfReportingErrors,
-                    'numberOfReportingErrors1': numberOfReportingErrors1,
-                    'numberOfStaffAdheringToSafety': numberOfStaffAdheringToSafety,
-                    'numberOfStaffAudited': numberOfStaffAudited,
-                    'adherencetosafety': adherencetosafety,
-                    'totalNumberOfMedicationErrors': totalNumberOfMedicationErrors,
-                    'totalNumberOfOpportunitiesOfMedicationErrors': totalNumberOfOpportunitiesOfMedicationErrors,
-                    'totalNumberOfMedicationErrors': totalNumberOfMedicationErrors,
-                    'numberOfTransfusionReactions': numberOfTransfusionReactions,
-                    'numberOfUnitsTransfused': numberOfUnitsTransfused,
-                    'transfusedreactions': transfusedreactions,
-                    'actualDeathInICU': actualDeathsInICU,
-                    'predictedDeathsInICU': predictedDeathsInICU,
-                    'morality_ratio_ICU': morality_ratio_ICU,
-                    "numberOfPatientsWhoDevelopNewOrWorseningOfPressureUlcer": numberOfPatientsWhoDevelopNewOrWorseningOfPressureUlcer,
-                    "totalNumberOfRestraintPatientsDays": totalNumberOfRestraintPatientsDays,
-                    "ulcers_admission": ulcers_admission,
-                    'numberOfReturnsToEmergencyWithin72hoursWithSimilarPresentingComplaints':numberOfReturnsToEmergencyWithin72hoursWithSimilarPresentingComplaints,
-                    "patientsToEmergency":numberOfPatientsWhoHaveComeToTheEmergency,
-                    'return_of_emergency':return_of_emergency,
-                    'numberOfUrinaryCatheterAssociatedUtisInThatMonth':numberOfUrinaryCatheterAssociatedUtisInThatMonth,
-                    'numberOfUrinaryCatheterDaysInThatMonth':numberOfUrinaryCatheterDaysInThatMonth,
-                    'catheterassociated_CDC_NHSN':catheterassociated_CDC_NHSN,
-                    'numberOfVentilatorAssociatedPneumonia':numberOfVentilatorAssociatedPneumonia,
-                    'numberOfVentilatorDays':numberOfVentilatorDays,
-                    'ventilatorassociated_CDC_NHSN':ventilatorassociated_CDC_NHSN,
-                    'numberCentralLineAssociatedBloodStreamInfectionsInAMonth':numberCentralLineAssociatedBloodStreamInfectionsInAMonth,
-                    'numberOfCentralLineDaysInThatMonth':numberOfCentralLineDaysInThatMonth,
-                    'bloodstrea_CDC_NHSN':bloodstrea_CDC_NHSN,
-                    'numberOfSurgicalSiteInfectionsInAGivenMonth':numberOfSurgicalSiteInfectionsInAGivenMonth,
-                    'numberOfSurgeriesPlannedInTheOt':numberOfSurgeriesPlannedInTheOt,
-                    'surgicalCDCandNHSN':surgicalCDCandNHSN,
-                    'sumOfTimeTakenForBloodAndBloodComponents':sumOfTimeTakenForBloodAndBloodComponents,
-                    'totalNumberOfBloodAndBloodComponentsCrossMatchedOrReserved':totalNumberOfBloodAndBloodComponentsCrossMatchedOrReserved,
-                    'available_transfusion':available_transfusion,
-                    "numberOfNursingStaff":numberOfNursingStaff,
-                    "numberOfBedsOccupied":numberOfBedsOccupied,
-                    "patient_ratio_icu":patient_ratio_icu,
-                    'sumOfTimeTakenForDischarge':sumOfTimeTakenForDischarge,
-                    'numberOfPatientsDischarged':numberOfPatientsDischarged,
-                    'time_taken_discharge':time_taken_discharge,
-                    'numberOfMedicalRecords':numberOfMedicalRecords,
-                    'numberofdischargesanddeaths':numberofdischargesanddeaths,
-                    'incomplete_improper_constent':incomplete_improper_constent,
-                    'waitingTimeForDiagnostics':waitingTimeForDiagnostics,
-                    'numberOfPatientsReportedInDiagnostics':numberOfPatientsReportedInDiagnostics,
-                    'waiting_time_diagnostics':waiting_time_diagnostics,
-                    'sumTotalPatientInTimeForConsultation':sumTotalPatientInTimeForConsultation,
-                    'numberOfOutPatients':numberOfOutPatients,
-                    'time_outpatient_consultation':time_outpatient_consultation,
-                    'numberOfNearMissReported':numberOfNearMissReported,
-                    'numberOfIncidentsReported':numberOfIncidentsReported,
-                    'near_misses':near_misses,
-                    'totalNumberOfHandoversDoneAppropriately':totalNumberOfHandoversDoneAppropriately,
-                    'totalNumberOfHandoverOpportunities':totalNumberOfHandoverOpportunities,
-                    'handovers_shift_change':handovers_shift_change,
-                    'totalNumberOfPrescriptionInCapitalLetters':totalNumberOfPrescriptionInCapitalLetters,
-                    'totalNumberOfPrescriptionSampled':totalNumberOfPrescriptionSampled,
-                    'medication_prescription_capitals':medication_prescription_capitals,
-                    'numberOfStockOutEmergencyDrugs':numberOfStockOutEmergencyDrugs,
-                    'stock_outs_emergency_medications':stock_outs_emergency_medications,
-                    'numberOfPatientsDevelopingAdverseDrugReactions':numberOfPatientsDevelopingAdverseDrugReactions,
-                    'numberOfInPatients':numberOfInPatients,
-                    'adverse_drug_reaction':adverse_drug_reaction,
-                    'numberOfUnplannedReturnToOTOrReexploration':numberOfUnplannedReturnToOTOrReexploration,
-                    "numberOfSurgeriesWhereTheProcedureWasFollowed":numberOfSurgeriesWhereTheProcedureWasFollowed,
-                    'unplanned_return_ot':unplanned_return_ot,
-                    "numberOfSurgeriesWhereTheProcedureWasFollowed":numberOfSurgeriesWhereTheProcedureWasFollowed,
-                    'plannedSurgeries':numberOfSurgeriesPlannedInTheOt,
-                    'percentage_of_surgeries':percentage_of_surgeries,
-                    'numberOfPatientsWhoDidReceiveAppropriateProphylacticAntibiotic':numberOfPatientsWhoDidReceiveAppropriateProphylacticAntibiotic,
-                    'plannedSurgeries':numberOfSurgeriesPlannedInTheOt,
-                    'percentage_prophylacticAntibiotic':percentage_prophylacticAntibiotic,
-                    'rescheduledCases':numberOfCasesReScheduledOrCanceled,
-                    'plannedSurgeries':numberOfSurgeriesPlannedInTheOt,
-                    're_scheduling_sugeries':re_scheduling_sugeries
-                }
+#                 # Calculate average time taken for initial assessment per admission
+#                 average_time_taken = sumOfTimeTakenforInitialAssessment / totalNumberOfAdmissions if totalNumberOfAdmissions > 0 else 0
+#                 numberOfReportingErrors1 = numberOfReportingErrors / numberOfTestsPerformed if numberOfTestsPerformed > 0 else 0
+#                 adherencetosafety = numberOfStaffAdheringToSafety / numberOfStaffAudited if numberOfStaffAudited > 0 else 0
+#                 transfusedreactions = numberOfTransfusionReactions / numberOfUnitsTransfused if numberOfUnitsTransfused > 0 else 0
+#                 totalNumberOfMedicationErrors = totalNumberOfMedicationErrors / totalNumberOfOpportunitiesOfMedicationErrors if totalNumberOfOpportunitiesOfMedicationErrors > 0 else 0
+#                 morality_ratio_ICU = actualDeathsInICU / predictedDeathsInICU if predictedDeathsInICU > 0 else 0
+#                 ulcers_admission = numberOfPatientsWhoDevelopNewOrWorseningOfPressureUlcer / totalNumberOfRestraintPatientsDays if totalNumberOfRestraintPatientsDays  > 0 else 0
+#                 return_of_emergency = numberOfReturnsToEmergencyWithin72hoursWithSimilarPresentingComplaints/numberOfPatientsWhoHaveComeToTheEmergency if numberOfPatientsWhoHaveComeToTheEmergency >0 else 0
+#                 catheterassociated_CDC_NHSN= numberOfUrinaryCatheterAssociatedUtisInThatMonth/numberOfUrinaryCatheterDaysInThatMonth if numberOfUrinaryCatheterDaysInThatMonth >0 else 0
+#                 ventilatorassociated_CDC_NHSN=numberOfVentilatorAssociatedPneumonia/numberOfVentilatorDays if numberOfVentilatorDays > 0 else 0
+#                 bloodstrea_CDC_NHSN=numberCentralLineAssociatedBloodStreamInfectionsInAMonth / numberOfCentralLineDaysInThatMonth if numberOfCentralLineDaysInThatMonth > 0 else 0
+#                 surgicalCDCandNHSN=numberOfSurgicalSiteInfectionsInAGivenMonth / numberOfSurgeriesPlannedInTheOt if numberOfSurgeriesPlannedInTheOt > 0 else 0
+#                 available_transfusion= sumOfTimeTakenForBloodAndBloodComponents / totalNumberOfBloodAndBloodComponentsCrossMatchedOrReserved if totalNumberOfBloodAndBloodComponentsCrossMatchedOrReserved > 0 else 0
+#                 patient_ratio_icu=numberOfBedsOccupied / numberOfNursingStaff if  numberOfNursingStaff > 0 else 0
+#                 time_taken_discharge= sumOfTimeTakenForDischarge / numberOfPatientsDischarged if numberOfPatientsDischarged > 0 else 0
+#                 numberofdischargesanddeaths=(numberOfDischarge + Numberofdeath )
+#                 incomplete_improper_constent= numberOfMedicalRecords / numberofdischargesanddeaths if numberofdischargesanddeaths >0 else 0
+#                 waiting_time_diagnostics = waitingTimeForDiagnostics / numberOfPatientsReportedInDiagnostics if numberOfPatientsReportedInDiagnostics >0 else 0
+#                 time_outpatient_consultation=sumTotalPatientInTimeForConsultation / numberOfOutPatients if numberOfOutPatients  > 0 else 0
+#                 near_misses=numberOfNearMissReported / numberOfIncidentsReported if numberOfIncidentsReported > 0 else 0
+#                 handovers_shift_change=totalNumberOfHandoversDoneAppropriately / totalNumberOfHandoverOpportunities if totalNumberOfHandoverOpportunities > 0 else 0                # Construct JSON response
+#                 medication_prescription_capitals=totalNumberOfPrescriptionInCapitalLetters / totalNumberOfPrescriptionSampled if totalNumberOfPrescriptionSampled >0 else 0
+#                 stock_outs_emergency_medications= numberOfStockOutEmergencyDrugs / 20 
+#                 adverse_drug_reaction = numberOfPatientsDevelopingAdverseDrugReactions / numberOfInPatients if numberOfInPatients > 0 else 0
+#                 unplanned_return_ot=numberOfUnplannedReturnToOTOrReexploration/numberOfSurgeriesWhereTheProcedureWasFollowed if numberOfSurgeriesWhereTheProcedureWasFollowed >0 else 0
+#                 percentage_of_surgeries=numberOfSurgeriesWhereTheProcedureWasFollowed/numberOfSurgeriesPlannedInTheOt if numberOfSurgeriesPlannedInTheOt>0 else 0
+#                 percentage_prophylacticAntibiotic=numberOfSurgeriesWhereTheProcedureWasFollowed/numberOfPatientsWhoDidReceiveAppropriateProphylacticAntibiotic if numberOfPatientsWhoDidReceiveAppropriateProphylacticAntibiotic >0 else 0
+#                 re_scheduling_sugeries=numberOfCasesReScheduledOrCanceled/numberOfSurgeriesWhereTheProcedureWasFollowed if numberOfSurgeriesWhereTheProcedureWasFollowed >0 else 0                
+#                 response_data = {
+#                     # 'data': list(all_data),
+#                     'totalNumberOfAdmissions': totalNumberOfAdmissions,
+#                     'timeTakenForInitialAssessment': sumOfTimeTakenforInitialAssessment,
+#                     'averagetimetakenperadmission': (int(average_time_taken)),
+#                     'numberOfTestsPerformed': numberOfTestsPerformed,
+#                     'numberOfReportingErrors': numberOfReportingErrors,
+#                     'numberOfReportingErrors1': numberOfReportingErrors1,
+#                     'numberOfStaffAdheringToSafety': numberOfStaffAdheringToSafety,
+#                     'numberOfStaffAudited': numberOfStaffAudited,
+#                     'adherencetosafety': adherencetosafety,
+#                     'totalNumberOfMedicationErrors': totalNumberOfMedicationErrors,
+#                     'totalNumberOfOpportunitiesOfMedicationErrors': totalNumberOfOpportunitiesOfMedicationErrors,
+#                     'totalNumberOfMedicationErrors': totalNumberOfMedicationErrors,
+#                     'numberOfTransfusionReactions': numberOfTransfusionReactions,
+#                     'numberOfUnitsTransfused': numberOfUnitsTransfused,
+#                     'transfusedreactions': transfusedreactions,
+#                     'actualDeathInICU': actualDeathsInICU,
+#                     'predictedDeathsInICU': predictedDeathsInICU,
+#                     'morality_ratio_ICU': morality_ratio_ICU,
+#                     "numberOfPatientsWhoDevelopNewOrWorseningOfPressureUlcer": numberOfPatientsWhoDevelopNewOrWorseningOfPressureUlcer,
+#                     "totalNumberOfRestraintPatientsDays": totalNumberOfRestraintPatientsDays,
+#                     "ulcers_admission": ulcers_admission,
+#                     'numberOfReturnsToEmergencyWithin72hoursWithSimilarPresentingComplaints':numberOfReturnsToEmergencyWithin72hoursWithSimilarPresentingComplaints,
+#                     "patientsToEmergency":numberOfPatientsWhoHaveComeToTheEmergency,
+#                     'return_of_emergency':return_of_emergency,
+#                     'numberOfUrinaryCatheterAssociatedUtisInThatMonth':numberOfUrinaryCatheterAssociatedUtisInThatMonth,
+#                     'numberOfUrinaryCatheterDaysInThatMonth':numberOfUrinaryCatheterDaysInThatMonth,
+#                     'catheterassociated_CDC_NHSN':catheterassociated_CDC_NHSN,
+#                     'numberOfVentilatorAssociatedPneumonia':numberOfVentilatorAssociatedPneumonia,
+#                     'numberOfVentilatorDays':numberOfVentilatorDays,
+#                     'ventilatorassociated_CDC_NHSN':ventilatorassociated_CDC_NHSN,
+#                     'numberCentralLineAssociatedBloodStreamInfectionsInAMonth':numberCentralLineAssociatedBloodStreamInfectionsInAMonth,
+#                     'numberOfCentralLineDaysInThatMonth':numberOfCentralLineDaysInThatMonth,
+#                     'bloodstrea_CDC_NHSN':bloodstrea_CDC_NHSN,
+#                     'numberOfSurgicalSiteInfectionsInAGivenMonth':numberOfSurgicalSiteInfectionsInAGivenMonth,
+#                     'numberOfSurgeriesPlannedInTheOt':numberOfSurgeriesPlannedInTheOt,
+#                     'surgicalCDCandNHSN':surgicalCDCandNHSN,
+#                     'sumOfTimeTakenForBloodAndBloodComponents':sumOfTimeTakenForBloodAndBloodComponents,
+#                     'totalNumberOfBloodAndBloodComponentsCrossMatchedOrReserved':totalNumberOfBloodAndBloodComponentsCrossMatchedOrReserved,
+#                     'available_transfusion':available_transfusion,
+#                     "numberOfNursingStaff":numberOfNursingStaff,
+#                     "numberOfBedsOccupied":numberOfBedsOccupied,
+#                     "patient_ratio_icu":patient_ratio_icu,
+#                     'sumOfTimeTakenForDischarge':sumOfTimeTakenForDischarge,
+#                     'numberOfPatientsDischarged':numberOfPatientsDischarged,
+#                     'time_taken_discharge':time_taken_discharge,
+#                     'numberOfMedicalRecords':numberOfMedicalRecords,
+#                     'numberofdischargesanddeaths':numberofdischargesanddeaths,
+#                     'incomplete_improper_constent':incomplete_improper_constent,
+#                     'waitingTimeForDiagnostics':waitingTimeForDiagnostics,
+#                     'numberOfPatientsReportedInDiagnostics':numberOfPatientsReportedInDiagnostics,
+#                     'waiting_time_diagnostics':waiting_time_diagnostics,
+#                     'sumTotalPatientInTimeForConsultation':sumTotalPatientInTimeForConsultation,
+#                     'numberOfOutPatients':numberOfOutPatients,
+#                     'time_outpatient_consultation':time_outpatient_consultation,
+#                     'numberOfNearMissReported':numberOfNearMissReported,
+#                     'numberOfIncidentsReported':numberOfIncidentsReported,
+#                     'near_misses':near_misses,
+#                     'totalNumberOfHandoversDoneAppropriately':totalNumberOfHandoversDoneAppropriately,
+#                     'totalNumberOfHandoverOpportunities':totalNumberOfHandoverOpportunities,
+#                     'handovers_shift_change':handovers_shift_change,
+#                     'totalNumberOfPrescriptionInCapitalLetters':totalNumberOfPrescriptionInCapitalLetters,
+#                     'totalNumberOfPrescriptionSampled':totalNumberOfPrescriptionSampled,
+#                     'medication_prescription_capitals':medication_prescription_capitals,
+#                     'numberOfStockOutEmergencyDrugs':numberOfStockOutEmergencyDrugs,
+#                     'stock_outs_emergency_medications':stock_outs_emergency_medications,
+#                     'numberOfPatientsDevelopingAdverseDrugReactions':numberOfPatientsDevelopingAdverseDrugReactions,
+#                     'numberOfInPatients':numberOfInPatients,
+#                     'adverse_drug_reaction':adverse_drug_reaction,
+#                     'numberOfUnplannedReturnToOTOrReexploration':numberOfUnplannedReturnToOTOrReexploration,
+#                     "numberOfSurgeriesWhereTheProcedureWasFollowed":numberOfSurgeriesWhereTheProcedureWasFollowed,
+#                     'unplanned_return_ot':unplanned_return_ot,
+#                     "numberOfSurgeriesWhereTheProcedureWasFollowed":numberOfSurgeriesWhereTheProcedureWasFollowed,
+#                     'plannedSurgeries':numberOfSurgeriesPlannedInTheOt,
+#                     'percentage_of_surgeries':percentage_of_surgeries,
+#                     'numberOfPatientsWhoDidReceiveAppropriateProphylacticAntibiotic':numberOfPatientsWhoDidReceiveAppropriateProphylacticAntibiotic,
+#                     'plannedSurgeries':numberOfSurgeriesPlannedInTheOt,
+#                     'percentage_prophylacticAntibiotic':percentage_prophylacticAntibiotic,
+#                     'rescheduledCases':numberOfCasesReScheduledOrCanceled,
+#                     'plannedSurgeries':numberOfSurgeriesPlannedInTheOt,
+#                     're_scheduling_sugeries':re_scheduling_sugeries
+#                 }
 
-                return JsonResponse(response_data, safe=False)
-            except Exception as e:
-                # Handle database errors
-                return JsonResponse({'error': str(e)}, status=500)
-        else:
-            # Informative error message for missing parameters
-            return JsonResponse({'error': 'Please select a year and month'}, status=400)
-    else:
-        # Error message for disallowed methods
-        return JsonResponse({'error': 'Only GET requests are'})
+#                 return JsonResponse(response_data, safe=False)
+#             except Exception as e:
+#                 # Handle database errors
+#                 return JsonResponse({'error': str(e)}, status=500)
+#         else:
+#             # Informative error message for missing parameters
+#             return JsonResponse({'error': 'Please select a year and month'}, status=400)
+#     else:
+#         # Error message for disallowed methods
+#         return JsonResponse({'error': 'Only GET requests are'})
 
 from .models import HandHygenieAudit  # make sure this is the model
 from .forms import HandHygenieAuditSerializer
 
 @api_view(['POST'])
 @csrf_exempt
-def HandHygenieAuditView(request):  # Renamed from HandHygenieAudit
+def HandHygenieAuditView(request):
     if request.method == 'POST':
-        nameOfTheStaff = request.data.get('nameOfTheStaff')
+        audit_by = request.data.get('auditBy')
+        selected_date = request.data.get('selectedDate')
         
-        # Check if data for the selected date already exists
-        if HandHygenieAudit.objects.filter(nameOfTheStaff=nameOfTheStaff).exists():
+        # Check if data for the selected date already exists for this user
+        if HandHygenieAudit.objects.filter(auditBy=audit_by, selectedDate=selected_date).exists():
             return Response({'error': 'Data already exists for this date.'}, status=status.HTTP_400_BAD_REQUEST)
         
         # Save the form data
@@ -1490,3 +1491,39 @@ def get_all_training_feedback(request):
     audits = TrainingFeedBack.objects.all()
     serializer = TrainingFeedBackSerializer(audits, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+
+from django.http import JsonResponse
+from .models import (
+    FirstFloor, SecondFloor, ThirdFloor, FirstSuit, SecondSuit,
+    Lab, CT, MRI, Xray, OPD, OT, Physiotherapy, Dialysis,
+    EmergencyRoom, ChemoWard, RecoveryWard, SICU, MICU, NICU
+)
+
+from django.forms.models import model_to_dict
+
+def get_formula_data(request):
+    data = {
+        'first_floor': [model_to_dict(obj) for obj in FirstFloor.objects.all()],
+        'second_floor': [model_to_dict(obj) for obj in SecondFloor.objects.all()],
+        'third_floor': [model_to_dict(obj) for obj in ThirdFloor.objects.all()],
+        'first_suit': [model_to_dict(obj) for obj in FirstSuit.objects.all()],
+        'second_suit': [model_to_dict(obj) for obj in SecondSuit.objects.all()],
+        'lab': [model_to_dict(obj) for obj in Lab.objects.all()],
+        'ct': [model_to_dict(obj) for obj in CT.objects.all()],
+        'mri': [model_to_dict(obj) for obj in MRI.objects.all()],
+        'xray': [model_to_dict(obj) for obj in Xray.objects.all()],
+        'opd': [model_to_dict(obj) for obj in OPD.objects.all()],
+        'ot': [model_to_dict(obj) for obj in OT.objects.all()],
+        'physiotherapy': [model_to_dict(obj) for obj in Physiotherapy.objects.all()],
+        'dialysis': [model_to_dict(obj) for obj in Dialysis.objects.all()],
+        'emergency_room': [model_to_dict(obj) for obj in EmergencyRoom.objects.all()],
+        'chemo_ward': [model_to_dict(obj) for obj in ChemoWard.objects.all()],
+        'recovery_ward': [model_to_dict(obj) for obj in RecoveryWard.objects.all()],
+        'sicu': [model_to_dict(obj) for obj in SICU.objects.all()],
+        'micu': [model_to_dict(obj) for obj in MICU.objects.all()],
+        'nicu': [model_to_dict(obj) for obj in NICU.objects.all()],
+    }
+
+    return JsonResponse(data, safe=False)
