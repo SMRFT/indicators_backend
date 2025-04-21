@@ -5,8 +5,7 @@ class Register(models.Model):
     id = models.CharField(max_length=500,primary_key=True)
     name = models.CharField(max_length=500)
     department = models.CharField(max_length=500)
-    role = models.CharField(max_length=500)
-    email = models.EmailField(max_length=500, unique=True)
+    role = models.CharField(max_length=500) 
     password = models.CharField(max_length=500)
 
 
@@ -512,35 +511,31 @@ class Dialysis(models.Model):
         return f"Dialysis Data: {self.selectedDate}"
 
 
-class OPPharmacy(models.Model):
+class Pharmacy(models.Model):
     id = models.CharField(max_length=100)
     name = models.CharField(max_length=100)
     selectedDate = models.CharField(max_length=100,primary_key=True)
-    numberOfStockOutEmergencyDrugs = models.CharField(max_length=100)
+    numberOfStockOutEmergencyDrugs = models.CharField(max_length=100,blank=True)
     numberOfStockOutEmergencyDrugsRemarks = models.CharField(max_length=5000,blank=True)
-    totalNumberOfPrescriptionInCapitalLetters = models.CharField(max_length=100)
-    totalNumberOfPrescriptionSampled = models.CharField(max_length=100)
-    totalNumberOfOutPatientPrescriptionReceived = models.CharField(max_length=100)
-    totalNumberOfInpatientPrescriptionReceived = models.CharField(max_length=100)
-    ward = models.CharField(max_length=100, default='OPPharmacy', blank=True, null=True)
+    totalNumberOfSafeAndRationalPrescriptions = models.CharField(max_length=100,blank=True)
+    totalNumberOfSafeAndRationalPrescriptionsRemarks = models.CharField(max_length=5000,blank=True)    
+    totalNumberOfPrescriptionsAudited = models.CharField(max_length=100,blank=True)
+    totalNumberOfPrescriptionsAuditedRemarks = models.CharField(max_length=5000,blank=True) 
+    totalNumberOfPrescriptionInCapitalLetters = models.CharField(max_length=100,blank=True)
+    totalNumberOfPrescriptionInCapitalLettersRemarks = models.CharField(max_length=5000,blank=True)
+    totalNumberOfPrescriptions = models.CharField(max_length=100,blank=True)
+    totalNumberOfPrescriptionsRemarks = models.CharField(max_length=5000,blank=True)
+    totalNumberOfMedicationErrors= models.CharField(max_length=100,blank=True)
+    totalNumberOfMedicationErrorsRemarks= models.CharField(max_length=5000,blank=True)
+    totalNumberOfOpportunitiesOfMedicationErrors = models.CharField(max_length=100,blank=True)
+    totalNumberOfOpportunitiesOfMedicationErrorsRemarks = models.CharField(max_length=5000,blank=True)
+    numberOfPatientsDevelopingAdverseDrugReactions = models.CharField(max_length=100,blank=True)
+    numberOfPatientsDevelopingAdverseDrugReactionsRemarks = models.CharField(max_length=5000,blank=True)
+    numberOfInPatients = models.CharField(max_length=100,blank=True)
+    numberOfInPatientsRemarks = models.CharField(max_length=5000,blank=True)
+    ward = models.CharField(max_length=100, default='Pharmacy', blank=True, null=True)
     def __str__(self):
-        return f"OPPharmacy Data: {self.selectedDate}"
-
-
-class IPPharmacy(models.Model):
-    id = models.CharField(max_length=100)
-    name = models.CharField(max_length=100)
-    selectedDate = models.CharField(max_length=100,primary_key=True)
-    numberOfStockOutEmergencyDrugs = models.CharField(max_length=100)
-    numberOfStockOutEmergencyDrugsRemarks = models.CharField(max_length=5000,blank=True)
-    totalNumberOfPrescriptionInCapitalLetters = models.CharField(max_length=100)
-    totalNumberOfPrescriptionSampled = models.CharField(max_length=100)
-    totalNumberOfOutPatientPrescriptionReceived = models.CharField(max_length=100)
-    totalNumberOfInpatientPrescriptionReceived = models.CharField(max_length=100)
-    ward = models.CharField(max_length=100, default='IPPharmacy', blank=True, null=True)
-    def __str__(self):
-        return f"IPPharmacy Data: {self.selectedDate}"
-    
+        return f"Pharmacy Data: {self.selectedDate}"    
     
 class EmergencyRoom(models.Model):
     id = models.CharField(max_length=100)
@@ -748,7 +743,7 @@ class MICU(models.Model):
     sumOfTimeTakenForDischargeInsurance = models.CharField(max_length=100)
     numberOfPatientsDischargedPay = models.CharField(max_length=100)
     sumOfTimeTakenForDischargePay = models.CharField(max_length=100)
-    numberOfInPatients = models.CharField(max_length=100)    
+    numberOfInPatients = models.CharField(max_length=100)
     totalNumberOfMedicationErrors = models.CharField(max_length=100)
     totalNumberOfMedicationErrorsRemarks = models.CharField(max_length=5000,blank=True)
     totalNumberOfOpportunitiesOfMedicationErrors = models.CharField(max_length=100)
@@ -804,9 +799,18 @@ class MICU(models.Model):
     numberOfPatientsOnIVTherapy = models.CharField(max_length=100)
     incidentsOfDelining = models.CharField(max_length=100)
     incidentsOfDeliningRemarks = models.CharField(max_length=5000,blank=True)
+    NumberofreturnstoICUwithin48hours=models.CharField(max_length=5000,blank=True)
+    NumberofreturnstoICUwithin48hoursRemarks=models.CharField(max_length=5000,blank=True)
+    NumberofdischargestransfersfromtheICU=models.CharField(max_length=5000,blank=True)
+    NumberofdischargestransfersfromtheICURemarks=models.CharField(max_length=5000,blank=True)
+    NumberofReintubation=models.CharField(max_length=5000,blank=True)
+    NumberofReintubationRemarks=models.CharField(max_length=5000,blank=True)
+    NumberofExtubation=models.CharField(max_length=5000,blank=True)
+    NumberofExtubationRemarks=models.CharField(max_length=5000,blank=True)
     ward = models.CharField(max_length=100, default='MICU', blank=True, null=True)
     def __str__(self):
         return f"MICU Data: {self.selectedDate}"
+
     
 
 class NICU(models.Model):
@@ -1015,8 +1019,8 @@ class HandHygenieAudit(models.Model):
 class TrainingFeedBack(models.Model):
     id = models.CharField(max_length=100)
     name = models.CharField(max_length=100)
-    selectedDate = models.CharField(max_length=100)
-    department = models.CharField(max_length=100,primary_key=True)
+    selectedDate = models.CharField(max_length=100,primary_key=True)
+    department = models.CharField(max_length=100)
     trainingTopic = models.CharField(max_length=100)
     duration = models.CharField(max_length=100)
     detailsOfTrainingTopic = models.CharField(max_length=1000)
@@ -1028,3 +1032,15 @@ class TrainingFeedBack(models.Model):
     ifSoPleaseSpecify = models.CharField(max_length=1000)   
     def __str__(self):
         return f"TrainingFeedBack Data: {self.selectedDate}"
+    
+
+# models.py
+from django.db import models
+class MockDrill(models.Model):
+    id = models.CharField(max_length=100)
+    name = models.CharField(max_length=100)
+    selectedDate = models.CharField(max_length=100,primary_key=True)
+    totalNumberOfVariationsObservedInMockDrill = models.CharField(max_length=100)
+    ward = models.CharField(max_length=100, default='MockDrill', blank=True, null=True)
+    def __str__(self):
+        return f"MockDrill on {self.selectedDate}"

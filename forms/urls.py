@@ -3,7 +3,7 @@ from django.urls import path
 from . import views
 from .views import registration,login,frontoffice_data,firstfloor_data,firstsuit_data,secondsuit_data,secondfloor_data,thirdfloor_data
 from .views import lab_data,CT_data,MRI_data,Xray_data,OPD_data,OT_data,HR_data,HandHygenieAuditView, get_all_hand_hygiene_data,TrainingFeedBackView,get_all_training_feedback
-from .views import physiotherapy_data,dialysis_data,OPPharmacy_data,IPPharmacy_data
+from .views import physiotherapy_data,dialysis_data
 from .views import emergency_room_data,MRD_data,recovery_ward_data,chemo_ward_data
 from .views import firstfloor_rawdata,firstsuit_rawdata,secondfloor_rawdata,secondsuit_rawdata,thirdfloor_rawdata,recoveryward_rawdata
 from .views import SICU_data,MICU_data,NICU_data,micu_rawdata,nicu_rawdata,sicu_rawdata,chemoward_rawdata,emergencyroom_rawdata
@@ -26,9 +26,7 @@ urlpatterns = [
     path('OT/', OT_data, name = 'OT_data'),
     path('HR/', HR_data, name = 'HR_data'),
     path('Physiotherapy/', physiotherapy_data, name = 'physiotherapy_data'),
-    path('Dialysis/', dialysis_data, name = 'dialysis_data'),
-    path('OPPharmacy/', OPPharmacy_data, name = 'OPPharmacy_data'),
-    path('IPPharmacy/', IPPharmacy_data, name ='IPPharmacy_data'),
+    path('Dialysis/', dialysis_data, name = 'dialysis_data'),   
     path('EmergencyRoom/', emergency_room_data, name = 'emergency_room_data'),
     path('MRD/', MRD_data, name = 'MRD_data'),
     path('ChemoWard/', chemo_ward_data, name = 'chemo_ward_data'),
@@ -59,4 +57,6 @@ urlpatterns = [
     path('HandHygieneReport/', get_all_hand_hygiene_data, name ='get_all_hand_hygiene_data'),
     path('TrainingFeedBack/', TrainingFeedBackView, name ='TrainingFeedBackView'),
     path('TrainingFeedBackReport/', get_all_training_feedback, name ='get_all_training_feedback'),
+    path('mockdrills/', views.create_mockdrill),
+    path('Pharmacy/', views.Pharmacy_data, name = 'Pharmacy_data'),
 ]

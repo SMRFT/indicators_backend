@@ -334,31 +334,7 @@ def dialysis_data(request):
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
-
-from .forms import OPPharmacySerializer
-@api_view(['POST'])
-@csrf_exempt
-def OPPharmacy_data(request):
-    if request.method == 'POST':
-        serializer = OPPharmacySerializer(request.POST)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
-
-from .forms import IPPharmacySerializer
-@api_view(['POST'])
-@csrf_exempt
-def IPPharmacy_data(request):
-    if request.method == 'POST':
-        serializer = IPPharmacySerializer(request.POST)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
-
+ 
 from .forms import EmergencyRoomSerializer
 @api_view(['POST'])
 @csrf_exempt
@@ -1089,7 +1065,7 @@ def availabilityofroomsandbeds(request, ward):
         return JsonResponse({'error': 'An error occurred while processing your request'}, status=500)
     
 
-from .models import FrontOffice,FirstFloor,FirstSuit,SecondFloor,SecondSuit,ThirdFloor,Lab,CT,MRI,Xray,OPPharmacy,IPPharmacy
+from .models import FrontOffice,FirstFloor,FirstSuit,SecondFloor,SecondSuit,ThirdFloor,Lab,CT,MRI,Xray,Pharmacy
 from .models import OT,MRD,MICU,NICU,SICU,RecoveryWard,ChemoWard,Physiotherapy,Dialysis,EmergencyRoom,OPD,HR 
 def get_ward_model(ward):
     ward_model_map = {
@@ -1115,8 +1091,9 @@ def get_ward_model(ward):
         'Dialysis': Dialysis,
         'ER': EmergencyRoom,
         'OPD': OPD,
-        'IPPharmacy': IPPharmacy,
-        'OPPharmacy': OPPharmacy
+        'Pharmacy': Pharmacy, 
+        'MockDrill': MockDrill,     
+
     }
     selected_model = ward_model_map.get(ward, None)
     if selected_model:
@@ -1159,9 +1136,9 @@ def HandHygenieAuditView(request):
         audit_by = request.data.get('auditBy')
         selected_date = request.data.get('selectedDate')
         
-        # Check if data for the selected date already exists for this user
-        if HandHygenieAudit.objects.filter(auditBy=audit_by, selectedDate=selected_date).exists():
-            return Response({'error': 'Data already exists for this date.'}, status=status.HTTP_400_BAD_REQUEST)
+        # # Check if data for the selected date already exists for this user
+        # if HandHygenieAudit.objects.filter(auditBy=audit_by, selectedDate=selected_date).exists():
+        #     return Response({'error': 'Data already exists for this date.'}, status=status.HTTP_400_BAD_REQUEST)
         
         # Save the form data
         serializer = HandHygenieAuditSerializer(data=request.data)
@@ -1213,7 +1190,7 @@ from django.http import JsonResponse
 from .models import (
     FirstFloor, SecondFloor, ThirdFloor, FirstSuit, SecondSuit,
     Lab, CT, MRI, Xray, OPD, OT, Physiotherapy, Dialysis,
-    EmergencyRoom, ChemoWard, RecoveryWard, SICU, MICU, NICU
+    EmergencyRoom, ChemoWard, RecoveryWard, SICU, MICU, NICU, Pharmacy, MockDrill
 )
 
 from django.forms.models import model_to_dict
@@ -1239,6 +1216,39 @@ def get_formula_data(request):
         'sicu': [model_to_dict(obj) for obj in SICU.objects.all()],
         'micu': [model_to_dict(obj) for obj in MICU.objects.all()],
         'nicu': [model_to_dict(obj) for obj in NICU.objects.all()],
+        'pharmacy': [model_to_dict(obj) for obj in Pharmacy.objects.all()],
+        'mockdrill': [model_to_dict(obj) for obj in MockDrill.objects.all()],
+
+
     }
 
     return JsonResponse(data, safe=False)
+
+
+from .forms import PharmacySerializer
+@api_view(['POST'])
+@csrf_exempt
+def Pharmacy_data(request):
+    if request.method == 'POST':
+        selected_date = request.data.get('selectedDate')
+        # Check if data for the selected date already exists
+        if RecoveryWard.objects.filter(selectedDate=selected_date).exists():
+            return Response({'error': 'Data already exists for this date.'}, status=status.HTTP_400_BAD_REQUEST)
+        # If no existing data, proceed with saving
+        serializer = PharmacySerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from .models import MockDrill
+from .forms import MockDrillSerializer
+@api_view(['POST'])
+def create_mockdrill(request):
+    serializer = MockDrillSerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data)
+    return Response(serializer.errors, status=400)

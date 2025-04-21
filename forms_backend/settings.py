@@ -103,12 +103,12 @@ password = quote_plus('smrft@2024')
 DATABASES = {
     'default': {
         'ENGINE': 'djongo',
-        'NAME': 'forms',  # Replace with your database name
+        'NAME': 'Indicators',  # Replace with your database name
         'CLIENT': {
-            'host': f'mongodb+srv://{username}:{password}@formsward.cgvfpoq.mongodb.net',  # Use the escaped username and password
-            'authMechanism': 'SCRAM-SHA-1',
-            'tlsCAFile': certifi.where(),
-        },
+            'host': 'mongodb://admin:ifS2nTs6vm@103.205.141.208:27017/',
+            'tls': True,
+            'tlsAllowInvalidCertificates': True,  # Skip cert validation
+        }
     },
 }
 

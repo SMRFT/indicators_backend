@@ -120,20 +120,6 @@ class DialysisSerializer(forms.ModelForm):
         fields = '__all__'
 
 
-from .models import OPPharmacy
-class OPPharmacySerializer(forms.ModelForm):
-    class Meta:
-        model = OPPharmacy
-        fields = '__all__'
-
-
-from .models import IPPharmacy
-class IPPharmacySerializer(forms.ModelForm):
-    class Meta:
-        model = IPPharmacy
-        fields = '__all__'
-
-
 from .models import EmergencyRoom
 class EmergencyRoomSerializer(forms.ModelForm):
     class Meta:
@@ -279,4 +265,16 @@ from .models import TrainingFeedBack
 class TrainingFeedBackSerializer(serializers.ModelSerializer):
     class Meta:
         model = TrainingFeedBack
+        fields = '__all__'
+
+from .models import Pharmacy
+class PharmacySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Pharmacy
+        fields = '__all__'
+
+from .models import MockDrill
+class MockDrillSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MockDrill
         fields = '__all__'
