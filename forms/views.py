@@ -1132,15 +1132,7 @@ from .forms import HandHygenieAuditSerializer
 @api_view(['POST'])
 @csrf_exempt
 def HandHygenieAuditView(request):
-    if request.method == 'POST':
-        audit_by = request.data.get('auditBy')
-        selected_date = request.data.get('selectedDate')
-        
-        # # Check if data for the selected date already exists for this user
-        # if HandHygenieAudit.objects.filter(auditBy=audit_by, selectedDate=selected_date).exists():
-        #     return Response({'error': 'Data already exists for this date.'}, status=status.HTTP_400_BAD_REQUEST)
-        
-        # Save the form data
+    if request.method == 'POST':        
         serializer = HandHygenieAuditSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -1164,18 +1156,17 @@ def TrainingFeedBackView(request):
     if request.method == 'POST':
         name = request.data.get('name')
         selected_date = request.data.get('selectedDate')
-        
-        # Check if data for the selected date already exists for this user
+
         if TrainingFeedBack.objects.filter(name=name, selectedDate=selected_date).exists():
-            return Response({'error': 'Data already exists for this date.'}, status=status.HTTP_400_BAD_REQUEST)
-        
-        # Save the form data
+            return Response({'error': 'Data already exists for this date and name.'}, status=status.HTTP_400_BAD_REQUEST)
+
         serializer = TrainingFeedBackSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
     
 
 @api_view(['GET'])
@@ -1187,42 +1178,66 @@ def get_all_training_feedback(request):
 
 
 from django.http import JsonResponse
+from django.forms.models import model_to_dict
 from .models import (
     FirstFloor, SecondFloor, ThirdFloor, FirstSuit, SecondSuit,
     Lab, CT, MRI, Xray, OPD, OT, Physiotherapy, Dialysis,
-    EmergencyRoom, ChemoWard, RecoveryWard, SICU, MICU, NICU, Pharmacy, MockDrill
+    EmergencyRoom, ChemoWard, RecoveryWard, SICU, MICU, NICU, Pharmacy,
+    MockDrill, HandHygenieAudit, MRD
 )
 
-from django.forms.models import model_to_dict
+def get_filtered_data(model, year, month, date_field='selectedDate'):
+    month_str = f"{int(month):02}"  # ensures '04' format
+    return [
+        model_to_dict(obj)
+        for obj in model.objects.all()
+        if getattr(obj, date_field) and
+           getattr(obj, date_field)[:4] == str(year) and
+           getattr(obj, date_field)[5:7] == month_str
+    ]
+
 
 def get_formula_data(request):
+    year = request.GET.get('year')
+    month = request.GET.get('month')
+
+    if not year or not month:
+        return JsonResponse({'error': 'Missing year or month'}, status=400)
+
+    try:
+        year = int(year)
+        month = int(month)
+    except ValueError:
+        return JsonResponse({'error': 'Invalid year or month format'}, status=400)
+
     data = {
-        'first_floor': [model_to_dict(obj) for obj in FirstFloor.objects.all()],
-        'second_floor': [model_to_dict(obj) for obj in SecondFloor.objects.all()],
-        'third_floor': [model_to_dict(obj) for obj in ThirdFloor.objects.all()],
-        'first_suit': [model_to_dict(obj) for obj in FirstSuit.objects.all()],
-        'second_suit': [model_to_dict(obj) for obj in SecondSuit.objects.all()],
-        'lab': [model_to_dict(obj) for obj in Lab.objects.all()],
-        'ct': [model_to_dict(obj) for obj in CT.objects.all()],
-        'mri': [model_to_dict(obj) for obj in MRI.objects.all()],
-        'xray': [model_to_dict(obj) for obj in Xray.objects.all()],
-        'opd': [model_to_dict(obj) for obj in OPD.objects.all()],
-        'ot': [model_to_dict(obj) for obj in OT.objects.all()],
-        'physiotherapy': [model_to_dict(obj) for obj in Physiotherapy.objects.all()],
-        'dialysis': [model_to_dict(obj) for obj in Dialysis.objects.all()],
-        'emergency_room': [model_to_dict(obj) for obj in EmergencyRoom.objects.all()],
-        'chemo_ward': [model_to_dict(obj) for obj in ChemoWard.objects.all()],
-        'recovery_ward': [model_to_dict(obj) for obj in RecoveryWard.objects.all()],
-        'sicu': [model_to_dict(obj) for obj in SICU.objects.all()],
-        'micu': [model_to_dict(obj) for obj in MICU.objects.all()],
-        'nicu': [model_to_dict(obj) for obj in NICU.objects.all()],
-        'pharmacy': [model_to_dict(obj) for obj in Pharmacy.objects.all()],
-        'mockdrill': [model_to_dict(obj) for obj in MockDrill.objects.all()],
-
-
+        'first_floor': get_filtered_data(FirstFloor, year, month),
+        'second_floor': get_filtered_data(SecondFloor, year, month),
+        'third_floor': get_filtered_data(ThirdFloor, year, month),
+        'first_suit': get_filtered_data(FirstSuit, year, month),
+        'second_suit': get_filtered_data(SecondSuit, year, month),
+        'lab': get_filtered_data(Lab, year, month),
+        'ct': get_filtered_data(CT, year, month),
+        'mri': get_filtered_data(MRI, year, month),
+        'xray': get_filtered_data(Xray, year, month),
+        'opd': get_filtered_data(OPD, year, month),
+        'ot': get_filtered_data(OT, year, month),
+        'physiotherapy': get_filtered_data(Physiotherapy, year, month),
+        'dialysis': get_filtered_data(Dialysis, year, month),
+        'emergency_room': get_filtered_data(EmergencyRoom, year, month),
+        'chemo_ward': get_filtered_data(ChemoWard, year, month),
+        'recovery_ward': get_filtered_data(RecoveryWard, year, month),
+        'sicu': get_filtered_data(SICU, year, month),
+        'micu': get_filtered_data(MICU, year, month),
+        'nicu': get_filtered_data(NICU, year, month),
+        'pharmacy': get_filtered_data(Pharmacy, year, month),
+        'mockdrill': get_filtered_data(MockDrill, year, month),
+        'hand_hygenie_audit': get_filtered_data(HandHygenieAudit, year, month),
+        'mrd': get_filtered_data(MRD, year, month),
     }
 
     return JsonResponse(data, safe=False)
+
 
 
 from .forms import PharmacySerializer

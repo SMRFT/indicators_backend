@@ -257,15 +257,28 @@ from rest_framework import serializers
 from .models import HandHygenieAudit
 
 class HandHygenieAuditSerializer(serializers.ModelSerializer):
+    id = serializers.SerializerMethodField()
+
     class Meta:
         model = HandHygenieAudit
         fields = '__all__'
 
+    def get_id(self, obj):
+        return str(obj.id)  # Convert ObjectId to string
+
+from rest_framework import serializers
 from .models import TrainingFeedBack
+from bson import ObjectId  # Make sure this is available if using MongoDB
+
 class TrainingFeedBackSerializer(serializers.ModelSerializer):
+    id = serializers.SerializerMethodField()
+
     class Meta:
         model = TrainingFeedBack
         fields = '__all__'
+
+    def get_id(self, obj):
+        return str(obj.id)  # Ensures ObjectId is serialized as a string
 
 from .models import Pharmacy
 class PharmacySerializer(serializers.ModelSerializer):

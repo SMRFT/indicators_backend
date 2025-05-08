@@ -1004,22 +1004,27 @@ class AvailabilityOfRoomsAndBeds(models.Model):
 
 
 class HandHygenieAudit(models.Model):
-    id = models.CharField(max_length=100)
+    id = models.AutoField(primary_key=True)
+    ID = models.CharField(max_length=100)
     auditBy = models.CharField(max_length=100)
     selectedDate = models.CharField(max_length=100)
-    nameOfTheStaff = models.CharField(max_length=100,primary_key=True)
+    nameOfTheStaff = models.CharField(max_length=100)
     area = models.CharField(max_length=1000)
     category = models.CharField(max_length=1000)
     typeOfHandHygiencePractice = models.CharField(max_length=1000)
     fiveMoments = models.CharField(max_length=1000)
-    ornamentsIfAny = models.CharField(max_length=1000)     
+    ornamentsIfAny = models.CharField(max_length=1000)
+    totalNumberOfActionsPerformed = models.CharField(max_length=1000)
+    totalNumberOfHandHygieneOpportunities = models.CharField(max_length=1000)
+
     def __str__(self):
         return f"HandHygenieAudit Data: {self.selectedDate}"
 
 class TrainingFeedBack(models.Model):
-    id = models.CharField(max_length=100)
+    id = models.AutoField(primary_key=True)
+    ID = models.CharField(max_length=100)
     name = models.CharField(max_length=100)
-    selectedDate = models.CharField(max_length=100,primary_key=True)
+    selectedDate = models.CharField(max_length=100)
     department = models.CharField(max_length=100)
     trainingTopic = models.CharField(max_length=100)
     duration = models.CharField(max_length=100)
