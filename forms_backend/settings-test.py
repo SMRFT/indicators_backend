@@ -27,14 +27,12 @@ DEBUG = True
 
 # ALLOWED_HOSTS = []
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'env-5683222.in1.cloudlets.co.in']
 CORS_ALLOWED_ORIGINS = [
-    'http://localhost:3000',  # Add your frontend URL here
+    'http://localhost:3000',
 ]
 
-# Optional: Allow credentials (cookies, authorization headers, etc.) to be included in cross-origin requests
 CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOW_ALL_ORIGINS = True  # Allow requests from all origins
 
 # Application definition
 
