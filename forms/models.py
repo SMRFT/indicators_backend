@@ -1,7 +1,25 @@
 # models.py
 from django.db import models
 
-class Register(models.Model):
+
+
+class AuditModel(models.Model):
+    created_by = models.CharField(max_length=100, blank=True, null=True)
+    created_date = models.DateTimeField(auto_now_add=True)
+    lastmodified_by = models.CharField(max_length=100, blank=True, null=True)
+    lastmodified_date = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        abstract = True
+
+    def save(self, *args, **kwargs):
+        if not self.created_by:
+            self.created_by = "system"
+        self.lastmodified_by = self.lastmodified_by or "system"
+        super().save(*args, **kwargs)
+
+
+class Register(AuditModel):
     id = models.CharField(max_length=500,primary_key=True)
     name = models.CharField(max_length=500)
     department = models.CharField(max_length=500)
@@ -9,13 +27,13 @@ class Register(models.Model):
     password = models.CharField(max_length=500)
 
 
-class Login(models.Model):
+class Login(AuditModel):
     id = models.CharField(max_length=500,primary_key=True)  
     password = models.CharField(max_length=120)
     department = models.CharField(max_length=500)
 
 
-class FrontOffice(models.Model):
+class FrontOffice(AuditModel):
     id = models.CharField(max_length=100)
     name = models.CharField(max_length=100)
     selectedDate = models.CharField(max_length=100,primary_key=True)
@@ -48,7 +66,7 @@ class FrontOffice(models.Model):
         return f"Front Office Data: {self.selectedDate}"
     
 
-class FirstFloor(models.Model):
+class FirstFloor(AuditModel):
     id = models.CharField(max_length=100)
     name = models.CharField(max_length=100)
     selectedDate = models.CharField(max_length=100,primary_key=True)
@@ -110,7 +128,7 @@ class FirstFloor(models.Model):
         return f"First Floor Data: {self.selectedDate}"
     
 
-class SecondFloor(models.Model):
+class SecondFloor(AuditModel):
     id = models.CharField(max_length=100)
     name = models.CharField(max_length=100)
     selectedDate = models.CharField(max_length=100,primary_key=True)
@@ -172,7 +190,7 @@ class SecondFloor(models.Model):
         return f"Second Floor Data: {self.ward}"
     
     
-class ThirdFloor(models.Model):
+class ThirdFloor(AuditModel):
     id = models.CharField(max_length=100)
     name = models.CharField(max_length=100)
     selectedDate = models.CharField(max_length=100,primary_key=True)
@@ -234,7 +252,7 @@ class ThirdFloor(models.Model):
         return f"Third Floor Data: {self.selectedDate}"
     
 
-class FirstSuit(models.Model):
+class FirstSuit(AuditModel):
     id = models.CharField(max_length=100)
     name = models.CharField(max_length=100)
     selectedDate = models.CharField(max_length=100,primary_key=True)
@@ -296,7 +314,7 @@ class FirstSuit(models.Model):
         return f"First Suit Data: {self.selectedDate}"
     
 
-class SecondSuit(models.Model):
+class SecondSuit(AuditModel):
     id = models.CharField(max_length=100)
     name = models.CharField(max_length=100)
     selectedDate = models.CharField(max_length=100,primary_key=True)
@@ -358,7 +376,7 @@ class SecondSuit(models.Model):
         return f"Second Suit Data: {self.selectedDate}"
     
 
-class Lab(models.Model):
+class Lab(AuditModel):
     id = models.CharField(max_length=100)  
     name = models.CharField(max_length=100)
     selectedDate = models.CharField(max_length=100,primary_key=True)
@@ -374,7 +392,7 @@ class Lab(models.Model):
         return f"Lab Data: {self.selectedDate}"
     
 
-class CT(models.Model):
+class CT(AuditModel):
     id = models.CharField(max_length=100)
     name = models.CharField(max_length=100)
     selectedDate = models.CharField(max_length=100,primary_key=True)
@@ -391,7 +409,7 @@ class CT(models.Model):
         return f"CT Data: {self.selectedDate}"
 
 
-class MRI(models.Model):
+class MRI(AuditModel):
     id = models.CharField(max_length=100)
     name = models.CharField(max_length=100)
     selectedDate = models.CharField(max_length=100,primary_key=True)
@@ -408,7 +426,7 @@ class MRI(models.Model):
         return f"MRI Data: {self.selectedDate}"
     
 
-class Xray(models.Model):
+class Xray(AuditModel):
     id = models.CharField(max_length=100)
     name = models.CharField(max_length=100)
     selectedDate = models.CharField(max_length=100,primary_key=True)
@@ -425,7 +443,7 @@ class Xray(models.Model):
         return f"Xray Data: {self.selectedDate}"
     
 
-class OPD(models.Model):
+class OPD(AuditModel):
         id = models.CharField(max_length=100)
         name = models.CharField(max_length=100)
         selectedDate = models.CharField(max_length=100,primary_key=True)
@@ -437,7 +455,7 @@ class OPD(models.Model):
             return f"OPD Data: {self.selectedDate}"
         
         
-class OT(models.Model):
+class OT(AuditModel):
     id = models.CharField(max_length=100)
     name = models.CharField(max_length=100)
     selectedDate = models.CharField(max_length=100,primary_key=True)
@@ -468,7 +486,7 @@ class OT(models.Model):
         return f"{self.selectedDate} - {self.totalPatients} Patients"
 
 
-class HR(models.Model):
+class HR(AuditModel):
     id = models.CharField(max_length=100)
     name = models.CharField(max_length=100)
     selectedDate = models.CharField(max_length=100,primary_key=True)
@@ -486,7 +504,7 @@ class HR(models.Model):
         return f"HR Data: {self.selectedDate}"
     
     
-class Physiotherapy(models.Model):
+class Physiotherapy(AuditModel):
     id = models.CharField(max_length=100)
     name = models.CharField(max_length=100)
     selectedDate = models.CharField(max_length=100,primary_key=True)
@@ -499,7 +517,7 @@ class Physiotherapy(models.Model):
         return f"Physiotherapy Data: {self.selectedDate}"
     
  
-class Dialysis(models.Model):
+class Dialysis(AuditModel):
     id = models.CharField(max_length=100)
     name = models.CharField(max_length=100)
     selectedDate = models.CharField(max_length=100,primary_key=True)
@@ -511,7 +529,7 @@ class Dialysis(models.Model):
         return f"Dialysis Data: {self.selectedDate}"
 
 
-class Pharmacy(models.Model):
+class Pharmacy(AuditModel):
     id = models.CharField(max_length=100)
     name = models.CharField(max_length=100)
     selectedDate = models.CharField(max_length=100,primary_key=True)
@@ -537,7 +555,7 @@ class Pharmacy(models.Model):
     def __str__(self):
         return f"Pharmacy Data: {self.selectedDate}"    
     
-class EmergencyRoom(models.Model):
+class EmergencyRoom(AuditModel):
     id = models.CharField(max_length=100)
     name = models.CharField(max_length=100)
     selectedDate = models.CharField(max_length=100,primary_key=True)
@@ -558,7 +576,7 @@ class EmergencyRoom(models.Model):
         return f"Emergency Room Data: {self.selectedDate}"
     
     
-class MRD(models.Model):
+class MRD(AuditModel):
     id = models.CharField(max_length=100)
     name = models.CharField(max_length=100)
     selectedDate = models.CharField(max_length=100,primary_key=True)
@@ -570,7 +588,7 @@ class MRD(models.Model):
         return f"MRD Data: {self.selectedDate}"
     
 
-class ChemoWard(models.Model):
+class ChemoWard(AuditModel):
     id = models.CharField(max_length=100)
     name = models.CharField(max_length=100)
     selectedDate = models.CharField(max_length=100,primary_key=True)
@@ -633,7 +651,7 @@ class ChemoWard(models.Model):
         return f"Chemo Ward Data: {self.selectedDate}"
     
     
-class RecoveryWard(models.Model):
+class RecoveryWard(AuditModel):
     id = models.CharField(max_length=100)
     name = models.CharField(max_length=100)
     selectedDate = models.CharField(max_length=100,primary_key=True)
@@ -668,7 +686,7 @@ class RecoveryWard(models.Model):
     def __str__(self):
         return f"Recovery ward Data: {self.selectedDate}"
 
-class SICU(models.Model):
+class SICU(AuditModel):
     id = models.CharField(max_length=100)
     name = models.CharField(max_length=100)
     selectedDate = models.CharField(max_length=100,primary_key=True)
@@ -732,7 +750,7 @@ class SICU(models.Model):
         return f"SICU Data: {self.selectedDate}"
     
 
-class MICU(models.Model):
+class MICU(AuditModel):
     id = models.CharField(max_length=100)
     name = models.CharField(max_length=100)
     selectedDate = models.CharField(max_length=100,primary_key=True)
@@ -813,7 +831,7 @@ class MICU(models.Model):
 
     
 
-class NICU(models.Model):
+class NICU(AuditModel):
     id = models.CharField(max_length=100)
     name = models.CharField(max_length=100)
     selectedDate = models.CharField(max_length=100,primary_key=True)
@@ -884,7 +902,7 @@ class NICU(models.Model):
         return f"NICU Data: {self.selectedDate}"
 
 
-class FirstFloorRawData(models.Model):
+class FirstFloorRawData(AuditModel):
     id = models.CharField(max_length=100)
     name = models.CharField(max_length=100)
     selectedDate = models.CharField(max_length=100,primary_key=True)
@@ -894,7 +912,7 @@ class FirstFloorRawData(models.Model):
         return f"FirstFloor RawData for {self.selectedDate}"
     
 
-class FirstSuitRawData(models.Model):
+class FirstSuitRawData(AuditModel):
     id = models.CharField(max_length=100)
     name = models.CharField(max_length=100)
     selectedDate = models.CharField(max_length=100,primary_key=True)
@@ -904,7 +922,7 @@ class FirstSuitRawData(models.Model):
         return f"FirstSuit RawData for {self.selectedDate}"
 
 
-class SecondFloorRawData(models.Model):
+class SecondFloorRawData(AuditModel):
     id = models.CharField(max_length=100)
     name = models.CharField(max_length=100)
     selectedDate = models.CharField(max_length=100,primary_key=True)
@@ -914,7 +932,7 @@ class SecondFloorRawData(models.Model):
         return f"SecondFloor RawData for {self.selectedDate}"
     
 
-class SecondSuitRawData(models.Model):
+class SecondSuitRawData(AuditModel):
     id = models.CharField(max_length=100)
     name = models.CharField(max_length=100)
     selectedDate = models.CharField(max_length=100,primary_key=True)
@@ -924,7 +942,7 @@ class SecondSuitRawData(models.Model):
         return f"SecondSuit RawData for {self.selectedDate}"
     
 
-class ThirdFloorRawData(models.Model):
+class ThirdFloorRawData(AuditModel):
     id = models.CharField(max_length=100)
     name = models.CharField(max_length=100)
     selectedDate = models.CharField(max_length=100,primary_key=True)
@@ -934,7 +952,7 @@ class ThirdFloorRawData(models.Model):
         return f"ThirdFloor RawData for {self.selectedDate}"
     
 
-class SICURawData(models.Model):
+class SICURawData(AuditModel):
     id = models.CharField(max_length=100)
     name = models.CharField(max_length=100)
     selectedDate = models.CharField(max_length=100,primary_key=True)
@@ -944,7 +962,7 @@ class SICURawData(models.Model):
         return f"SICU RawData for {self.selectedDate}"
     
 
-class MICURawData(models.Model):
+class MICURawData(AuditModel):
     id = models.CharField(max_length=100)
     name = models.CharField(max_length=100)
     selectedDate = models.CharField(max_length=100,primary_key=True)
@@ -954,7 +972,7 @@ class MICURawData(models.Model):
         return f"MICU RawData for {self.selectedDate}"
     
     
-class NICURawData(models.Model):
+class NICURawData(AuditModel):
     id = models.CharField(max_length=100)
     name = models.CharField(max_length=100)
     selectedDate = models.CharField(max_length=100,primary_key=True)
@@ -964,7 +982,7 @@ class NICURawData(models.Model):
         return f"NICU RawData for {self.selectedDate}"
     
 
-class EmergencyRoomRawData(models.Model):
+class EmergencyRoomRawData(AuditModel):
     id = models.CharField(max_length=100)
     name = models.CharField(max_length=100)
     selectedDate = models.CharField(max_length=100,primary_key=True)
@@ -974,7 +992,7 @@ class EmergencyRoomRawData(models.Model):
         return f"EmergencyRoom RawData for {self.selectedDate}"
     
 
-class ChemoWardRawData(models.Model):
+class ChemoWardRawData(AuditModel):
     id = models.CharField(max_length=100)
     name = models.CharField(max_length=100)
     selectedDate = models.CharField(max_length=100,primary_key=True)
@@ -984,7 +1002,7 @@ class ChemoWardRawData(models.Model):
         return f"ChemoWard RawData for {self.selectedDate}"
     
 
-class RecoverywardRawData(models.Model):
+class RecoverywardRawData(AuditModel):
     id = models.CharField(max_length=100)
     name = models.CharField(max_length=100)
     selectedDate = models.CharField(max_length=100,primary_key=True)
@@ -994,7 +1012,7 @@ class RecoverywardRawData(models.Model):
         return f"Recoveryward RawData for {self.selectedDate}"
     
 
-class AvailabilityOfRoomsAndBeds(models.Model):
+class AvailabilityOfRoomsAndBeds(AuditModel):
     selectedward = models.CharField(max_length=100)
     numberOfBedsOccupied = models.CharField(max_length=100)
     numberOfAvailability = models.CharField(max_length=100)
@@ -1003,7 +1021,7 @@ class AvailabilityOfRoomsAndBeds(models.Model):
     
 
 
-class HandHygenieAudit(models.Model):
+class HandHygenieAudit(AuditModel):
     id = models.AutoField(primary_key=True)
     ID = models.CharField(max_length=100)
     auditBy = models.CharField(max_length=100)
@@ -1020,7 +1038,7 @@ class HandHygenieAudit(models.Model):
     def __str__(self):
         return f"HandHygenieAudit Data: {self.selectedDate}"
 
-class TrainingFeedBack(models.Model):
+class TrainingFeedBack(AuditModel):
     id = models.AutoField(primary_key=True)
     ID = models.CharField(max_length=100)
     name = models.CharField(max_length=100)
@@ -1041,7 +1059,7 @@ class TrainingFeedBack(models.Model):
 
 # models.py
 from django.db import models
-class MockDrill(models.Model):
+class MockDrill(AuditModel):
     id = models.CharField(max_length=100)
     name = models.CharField(max_length=100)
     selectedDate = models.CharField(max_length=100,primary_key=True)
