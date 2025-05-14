@@ -2,13 +2,16 @@ from rest_framework.views import APIView
 from django.http import JsonResponse
 from rest_framework.response import Response
 from django.views.decorators.csrf import csrf_exempt
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework import status
 from datetime import datetime,timedelta
 import json
+from pyauth.auth import HasRoleAndDataPermission
+from .auth.permissions import SkipPermissionsIfDisabled
 
 from .forms import RegisterSerializer
 @api_view(['POST'])
+@permission_classes([SkipPermissionsIfDisabled, HasRoleAndDataPermission])
 def registration(request):
     if request.method == 'POST':
         serializer = RegisterSerializer(data=request.data)
@@ -21,6 +24,7 @@ def registration(request):
 from .models import Register
 @api_view(['POST'])
 @csrf_exempt  
+@permission_classes([SkipPermissionsIfDisabled, HasRoleAndDataPermission])
 def login(request):
     if request.method == 'POST':
         employee_id = request.data.get('employeeId')       
@@ -37,7 +41,7 @@ def login(request):
 
 from .forms import FrontOfficeSerializer
 @api_view(['POST'])
-@csrf_exempt
+@permission_classes([SkipPermissionsIfDisabled, HasRoleAndDataPermission])
 def frontoffice_data(request):
     if request.method == 'POST':
         selected_date = request.data.get('selectedDate')
@@ -58,6 +62,7 @@ def frontoffice_data(request):
 from .forms import FirstFloorSerializer
 @api_view(['POST'])
 @csrf_exempt
+@permission_classes([SkipPermissionsIfDisabled, HasRoleAndDataPermission])
 def firstfloor_data(request):
     if request.method == 'POST':
         selected_date = request.data.get('selectedDate')
@@ -78,6 +83,7 @@ def firstfloor_data(request):
 from .forms import SecondFloorSerializer
 @api_view(['POST'])
 @csrf_exempt
+@permission_classes([SkipPermissionsIfDisabled, HasRoleAndDataPermission])
 def secondfloor_data(request):
     if request.method == 'POST':
         selected_date = request.data.get('selectedDate')
@@ -98,6 +104,7 @@ def secondfloor_data(request):
 from .forms import ThirdFloorSerializer
 @api_view(['POST'])
 @csrf_exempt
+@permission_classes([SkipPermissionsIfDisabled, HasRoleAndDataPermission])
 def thirdfloor_data(request):
     if request.method == 'POST':
         selected_date = request.data.get('selectedDate')
@@ -118,6 +125,7 @@ def thirdfloor_data(request):
 from .forms import FirstSuitSerializer
 @api_view(['POST'])
 @csrf_exempt
+@permission_classes([SkipPermissionsIfDisabled, HasRoleAndDataPermission])
 def firstsuit_data(request):
     if request.method == 'POST':
         selected_date = request.data.get('selectedDate')
@@ -138,6 +146,7 @@ def firstsuit_data(request):
 from .forms import SecondSuitSerializer
 @api_view(['POST'])
 @csrf_exempt
+@permission_classes([SkipPermissionsIfDisabled, HasRoleAndDataPermission])
 def secondsuit_data(request):
     if request.method == 'POST':
         selected_date = request.data.get('selectedDate')
@@ -158,6 +167,7 @@ def secondsuit_data(request):
 from .forms import LabSerializer
 @api_view(['POST'])
 @csrf_exempt
+@permission_classes([SkipPermissionsIfDisabled, HasRoleAndDataPermission])
 def lab_data(request):
     if request.method == 'POST':
         selected_date = request.data.get('selectedDate')
@@ -178,6 +188,7 @@ def lab_data(request):
 from .forms import CTSerializer
 @api_view(['POST'])
 @csrf_exempt
+@permission_classes([SkipPermissionsIfDisabled, HasRoleAndDataPermission])
 def CT_data(request):
     if request.method == 'POST':
         selected_date = request.data.get('selectedDate')
@@ -198,6 +209,7 @@ def CT_data(request):
 from .forms import MRISerializer
 @api_view(['POST'])
 @csrf_exempt
+@permission_classes([SkipPermissionsIfDisabled, HasRoleAndDataPermission])
 def MRI_data(request):
     if request.method == 'POST':
         selected_date = request.data.get('selectedDate')
@@ -218,6 +230,7 @@ def MRI_data(request):
 from .forms import XraySerializer
 @api_view(['POST'])
 @csrf_exempt
+@permission_classes([SkipPermissionsIfDisabled, HasRoleAndDataPermission])
 def Xray_data(request):
     if request.method == 'POST':
         selected_date = request.data.get('selectedDate')
@@ -238,6 +251,7 @@ def Xray_data(request):
 from .forms import OPDSerializer
 @api_view(['POST'])
 @csrf_exempt
+@permission_classes([SkipPermissionsIfDisabled, HasRoleAndDataPermission])
 def OPD_data(request):
     if request.method == 'POST':
         selected_date = request.data.get('selectedDate')
@@ -258,6 +272,7 @@ def OPD_data(request):
 from .forms import OTSerializer
 @api_view(['POST'])
 @csrf_exempt
+@permission_classes([SkipPermissionsIfDisabled, HasRoleAndDataPermission])
 def OT_data(request):
     if request.method == 'POST':
         selected_date = request.data.get('selectedDate')
@@ -278,6 +293,7 @@ def OT_data(request):
 from .forms import HRSerializer
 @api_view(['POST'])
 @csrf_exempt
+@permission_classes([SkipPermissionsIfDisabled, HasRoleAndDataPermission])
 def HR_data(request):
     if request.method == 'POST':
         selected_date = request.data.get('selectedDate')
@@ -298,6 +314,7 @@ def HR_data(request):
 from .forms import PhysiotherapySerializer
 @api_view(['POST'])
 @csrf_exempt
+@permission_classes([SkipPermissionsIfDisabled, HasRoleAndDataPermission])
 def physiotherapy_data(request):
     if request.method == 'POST':
         selected_date = request.data.get('selectedDate')
@@ -318,6 +335,7 @@ def physiotherapy_data(request):
 from .forms import DialysisSerializer
 @api_view(['POST'])
 @csrf_exempt
+@permission_classes([SkipPermissionsIfDisabled, HasRoleAndDataPermission])
 def dialysis_data(request):
     if request.method == 'POST':
         selected_date = request.data.get('selectedDate')
@@ -338,6 +356,7 @@ def dialysis_data(request):
 from .forms import EmergencyRoomSerializer
 @api_view(['POST'])
 @csrf_exempt
+@permission_classes([SkipPermissionsIfDisabled, HasRoleAndDataPermission])
 def emergency_room_data(request):
     if request.method == 'POST':
         selected_date = request.data.get('selectedDate')
@@ -358,6 +377,7 @@ def emergency_room_data(request):
 from .forms import MRDSerializer
 @api_view(['POST'])
 @csrf_exempt
+@permission_classes([SkipPermissionsIfDisabled, HasRoleAndDataPermission])
 def MRD_data(request):
     if request.method == 'POST':
         selected_date = request.data.get('selectedDate')
@@ -378,6 +398,7 @@ def MRD_data(request):
 from .forms import ChemoWardSerializer
 @api_view(['POST'])
 @csrf_exempt
+@permission_classes([SkipPermissionsIfDisabled, HasRoleAndDataPermission])
 def chemo_ward_data(request):
     if request.method == 'POST':
         selected_date = request.data.get('selectedDate')
@@ -398,6 +419,7 @@ def chemo_ward_data(request):
 from .forms import RecoveryWardSerializer
 @api_view(['POST'])
 @csrf_exempt
+@permission_classes([SkipPermissionsIfDisabled, HasRoleAndDataPermission])
 def recovery_ward_data(request):
     if request.method == 'POST':
         selected_date = request.data.get('selectedDate')
@@ -418,6 +440,7 @@ def recovery_ward_data(request):
 from .forms import SICUSerializer
 @api_view(['POST'])
 @csrf_exempt
+@permission_classes([SkipPermissionsIfDisabled, HasRoleAndDataPermission])
 def SICU_data(request):
     if request.method == 'POST':
         selected_date = request.data.get('selectedDate')
@@ -438,6 +461,7 @@ def SICU_data(request):
 from .forms import MICUSerializer
 @api_view(['POST'])
 @csrf_exempt
+@permission_classes([SkipPermissionsIfDisabled, HasRoleAndDataPermission])
 def MICU_data(request):
     if request.method == 'POST':
         selected_date = request.data.get('selectedDate')
@@ -458,6 +482,7 @@ def MICU_data(request):
 from .forms import NICUSerializer
 @api_view(['POST'])
 @csrf_exempt
+@permission_classes([SkipPermissionsIfDisabled, HasRoleAndDataPermission])
 def NICU_data(request):
     if request.method == 'POST':
         selected_date = request.data.get('selectedDate')
@@ -478,6 +503,7 @@ def NICU_data(request):
 from .forms import FirstFloorRawDataSerializer
 @api_view(['POST'])
 @csrf_exempt
+@permission_classes([SkipPermissionsIfDisabled, HasRoleAndDataPermission])
 def firstfloor_rawdata(request):
     if request.method == 'POST':
         data = request.data
@@ -511,6 +537,7 @@ def firstfloor_rawdata(request):
 from .forms import FirstSuitRawDataSerializer
 @api_view(['POST'])
 @csrf_exempt
+@permission_classes([SkipPermissionsIfDisabled, HasRoleAndDataPermission])
 def firstsuit_rawdata(request):
     if request.method == 'POST':
         data = request.data
@@ -544,6 +571,7 @@ def firstsuit_rawdata(request):
 from .forms import SecondFloorRawDataSerializer
 @api_view(['POST'])
 @csrf_exempt
+@permission_classes([SkipPermissionsIfDisabled, HasRoleAndDataPermission])
 def secondfloor_rawdata(request):
     if request.method == 'POST':
         data = request.data
@@ -577,6 +605,7 @@ def secondfloor_rawdata(request):
 from .forms import SecondSuitRawDataSerializer
 @api_view(['POST'])
 @csrf_exempt
+@permission_classes([SkipPermissionsIfDisabled, HasRoleAndDataPermission])
 def secondsuit_rawdata(request):
     if request.method == 'POST':
         data = request.data
@@ -610,6 +639,7 @@ def secondsuit_rawdata(request):
 from .forms import ThirdFloorRawDataSerializer
 @api_view(['POST'])
 @csrf_exempt
+@permission_classes([SkipPermissionsIfDisabled, HasRoleAndDataPermission])
 def thirdfloor_rawdata(request):
     if request.method == 'POST':
         data = request.data
@@ -643,6 +673,7 @@ def thirdfloor_rawdata(request):
 from .forms import SICURawDataSerializer
 @api_view(['POST'])
 @csrf_exempt
+@permission_classes([SkipPermissionsIfDisabled, HasRoleAndDataPermission])
 def sicu_rawdata(request):
     if request.method == 'POST':
         data = request.data
@@ -676,6 +707,7 @@ def sicu_rawdata(request):
 from .forms import MICURawDataSerializer
 @api_view(['POST'])
 @csrf_exempt
+@permission_classes([SkipPermissionsIfDisabled, HasRoleAndDataPermission])
 def micu_rawdata(request):
     if request.method == 'POST':
         data = request.data
@@ -709,6 +741,7 @@ def micu_rawdata(request):
 from .forms import NICURawDataSerializer
 @api_view(['POST'])
 @csrf_exempt
+@permission_classes([SkipPermissionsIfDisabled, HasRoleAndDataPermission])
 def nicu_rawdata(request):
     if request.method == 'POST':
         data = request.data
@@ -742,6 +775,7 @@ def nicu_rawdata(request):
 from .forms import EmergencyRoomRawDataSerializer
 @api_view(['POST'])
 @csrf_exempt
+@permission_classes([SkipPermissionsIfDisabled, HasRoleAndDataPermission])
 def emergencyroom_rawdata(request):
     if request.method == 'POST':
         data = request.data
@@ -775,6 +809,7 @@ def emergencyroom_rawdata(request):
 from .forms import ChemoWardRawDataSerializer
 @api_view(['POST'])
 @csrf_exempt
+@permission_classes([SkipPermissionsIfDisabled, HasRoleAndDataPermission])
 def chemoward_rawdata(request):
     if request.method == 'POST':
         data = request.data
@@ -808,6 +843,7 @@ def chemoward_rawdata(request):
 from .forms import RecoverywardRawDataSerializer
 @api_view(['POST'])
 @csrf_exempt
+@permission_classes([SkipPermissionsIfDisabled, HasRoleAndDataPermission])
 def recoveryward_rawdata(request):
     if request.method == 'POST':
         data = request.data
@@ -843,7 +879,9 @@ import calendar
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 
+
 @csrf_exempt
+@permission_classes([SkipPermissionsIfDisabled, HasRoleAndDataPermission])
 def get_export_data(request):
     if request.method == 'GET':
         ward = request.GET.get('ward')
@@ -1131,6 +1169,7 @@ from .forms import HandHygenieAuditSerializer
 
 @api_view(['POST'])
 @csrf_exempt
+@permission_classes([SkipPermissionsIfDisabled, HasRoleAndDataPermission])
 def HandHygenieAuditView(request):
     if request.method == 'POST':        
         serializer = HandHygenieAuditSerializer(data=request.data)
@@ -1142,6 +1181,7 @@ def HandHygenieAuditView(request):
     
 
 @api_view(['GET'])
+@permission_classes([SkipPermissionsIfDisabled, HasRoleAndDataPermission])
 def get_all_hand_hygiene_data(request):
     audits = HandHygenieAudit.objects.all()
     serializer = HandHygenieAuditSerializer(audits, many=True)
@@ -1152,6 +1192,7 @@ from .forms import TrainingFeedBackSerializer
 
 @api_view(['POST'])
 @csrf_exempt
+@permission_classes([SkipPermissionsIfDisabled, HasRoleAndDataPermission])
 def TrainingFeedBackView(request):
     if request.method == 'POST':
         name = request.data.get('name')
@@ -1170,6 +1211,7 @@ def TrainingFeedBackView(request):
     
 
 @api_view(['GET'])
+@permission_classes([SkipPermissionsIfDisabled, HasRoleAndDataPermission])
 def get_all_training_feedback(request):
     audits = TrainingFeedBack.objects.all()
     serializer = TrainingFeedBackSerializer(audits, many=True)
@@ -1243,6 +1285,7 @@ def get_formula_data(request):
 from .forms import PharmacySerializer
 @api_view(['POST'])
 @csrf_exempt
+@permission_classes([SkipPermissionsIfDisabled, HasRoleAndDataPermission])
 def Pharmacy_data(request):
     if request.method == 'POST':
         selected_date = request.data.get('selectedDate')
@@ -1261,6 +1304,7 @@ from rest_framework.response import Response
 from .models import MockDrill
 from .forms import MockDrillSerializer
 @api_view(['POST'])
+@permission_classes([SkipPermissionsIfDisabled, HasRoleAndDataPermission])
 def create_mockdrill(request):
     serializer = MockDrillSerializer(data=request.data)
     if serializer.is_valid():

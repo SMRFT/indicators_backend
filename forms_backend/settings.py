@@ -14,7 +14,8 @@ from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
+from dotenv import load_dotenv
+load_dotenv()
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
@@ -94,24 +95,21 @@ WSGI_APPLICATION = 'forms_backend.wsgi.application'
 #         'NAME': BASE_DIR / 'db.sqlite3',
 #     }
 # }
-from urllib.parse import quote_plus
 
+import os
 # Escape the username and password
-username = quote_plus('forms')
-password = quote_plus('smrft@2024')
-
 DATABASES = {
     'default': {
         'ENGINE': 'djongo',
-        'NAME': 'Indicators',  # Replace with your database name
+        'NAME': os.getenv("INDICATORS_DB_NAME","Indicators"),
+        'ENFORCE_SCHEMA': False,
         'CLIENT': {
-            'host': 'mongodb://admin:ifS2nTs6vm@103.205.141.208:27017/',
-            'tls': True,
-            'tlsAllowInvalidCertificates': True,  # Skip cert validation
+            'host': os.getenv("GLOBAL_DB_HOST"),
+            # 'tls': True,
+            # 'tlsCAFile': certifi.where(),
         }
-    },
+    }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
