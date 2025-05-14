@@ -1063,7 +1063,7 @@ def update_export_rawdata(request):
         return JsonResponse({'error': 'Only PUT requests are allowed'}, status=405)
 
 
-from .migrations.Views.constant import floor_beds
+from .constant import floor_beds
 def availabilityofroomsandbeds(request, ward):
     try:
         # Get the corresponding model class based on the selected ward
