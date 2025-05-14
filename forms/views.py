@@ -880,8 +880,13 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 
 
+
+from django.http import JsonResponse
+from datetime import datetime
+import calendar
+
+EXCLUDED_FIELDS = {'created_by', 'created_date', 'lastmodified_by', 'lastmodified_date'}
 @csrf_exempt
-@permission_classes([SkipPermissionsIfDisabled, HasRoleAndDataPermission])
 def get_export_data(request):
     if request.method == 'GET':
         ward = request.GET.get('ward')
@@ -893,35 +898,38 @@ def get_export_data(request):
 
         if ward and date:
             query_params['ward'] = ward
-            parsed_date = datetime.strptime(date, "%Y-%m-%dT%H:%M:%S.%fZ").date()  # Convert to proper date
+            parsed_date = datetime.strptime(date, "%Y-%m-%dT%H:%M:%S.%fZ").date()
             query_params['selectedDate'] = parsed_date
 
         if ward and year and month:
             year = int(year)
             month = int(month)
-
-            # Ensure start_date is 1st of the month
             start_date = datetime(year, month, 1).date()
-
-            # Get the last day of the month
             last_day = calendar.monthrange(year, month)[1]
-            end_date = datetime(year, month, last_day).date()  # Ensure it's just date, not datetime
-
+            end_date = datetime(year, month, last_day).date()
             query_params['ward'] = ward
             query_params['selectedDate__gte'] = start_date
-            query_params['selectedDate__lte'] = end_date  # Ensure last day is included
+            query_params['selectedDate__lte'] = end_date
 
         if query_params:
             try:
                 selected_model = get_ward_model(ward)
-                data = selected_model.objects.filter(**query_params).values()
-                return JsonResponse(list(data), safe=False)
+                queryset = selected_model.objects.filter(**query_params).values()
+
+                # Remove excluded fields
+                filtered_data = [
+                    {k: v for k, v in item.items() if k not in EXCLUDED_FIELDS}
+                    for item in queryset
+                ]
+
+                return JsonResponse(filtered_data, safe=False)
             except Exception as e:
                 return JsonResponse({'error': str(e)}, status=500)
         else:
             return JsonResponse({'error': 'Please select a ward, year, and month'}, status=400)
     else:
         return JsonResponse({'error': 'Only GET requests are allowed'}, status=405)
+
 
 @csrf_exempt
 def delete_export_data(request):
