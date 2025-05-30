@@ -29,7 +29,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'env-5683222.in1.cloudlets.co.in']
 CORS_ALLOWED_ORIGINS = [
-    'http://localhost:3000',
+    'http://localhost:3000','https://test.shinova.in'
 ]
 
 CORS_ALLOW_CREDENTIALS = True
