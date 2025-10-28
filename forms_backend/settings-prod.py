@@ -27,9 +27,9 @@ DEBUG = True
 
 # ALLOWED_HOSTS = []
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['shinova.in1.cloudlets.co.in','shinova.in']
 CORS_ALLOWED_ORIGINS = [
-    'http://localhost:3000',  # Add your frontend URL here
+    'http://localhost:3000', 'https://shinova.in' # Add your frontend URL here
 ]
 
 # Optional: Allow credentials (cookies, authorization headers, etc.) to be included in cross-origin requests
