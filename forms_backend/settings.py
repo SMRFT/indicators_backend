@@ -96,6 +96,7 @@ WSGI_APPLICATION = 'forms_backend.wsgi.application'
 #     }
 # }
 
+import certifi
 import os
 # Escape the username and password
 DATABASES = {
@@ -153,3 +154,16 @@ STATIC_URL = '/static/'
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+CORS_ALLOW_HEADERS = [
+    'Authorization',
+    'content-type',
+    'accept',
+    'origin',
+    'x-requested-with',
+]
+
+CORS_EXPOSE_HEADERS = [
+    'Authorization',
+]
