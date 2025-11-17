@@ -1,0 +1,32 @@
+# Environment variables
+.env
+
+# Python virtual environment
+venv/
+ENV/
+env/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Django migrations
+**/migrations/
+!*/migrations/__init__.py
+
+# VSCode settings
+.vscode/
+
+# Mac OS files
+.DS_Store
+
+# Logs
+*.log
+
+# Node modules (if you have React in same project)
+node_modules/
+
+# Build artifacts
+dist/
+build/
