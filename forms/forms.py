@@ -161,7 +161,6 @@ class MICUSerializer(forms.ModelForm):
         model = MICU
         fields = '__all__'
 
-
 from .models import NICU
 class NICUSerializer(forms.ModelForm):
     class Meta:
