@@ -952,6 +952,8 @@ class NICU(AuditModel):
     predictedDeathsInICU = models.CharField(max_length=100)
     numberOfVentilatorAssociatedPneumonia = models.CharField(max_length=100)
     numberOfVentilatorAssociatedPneumoniaRemarks = models.CharField(max_length=5000,blank=True)
+    numberOfPatientCatheter = models.CharField(max_length=100)
+    numberOfPatientCatheterRemarks = models.CharField(max_length=5000,blank=True)
     numberOfPatientCentralLine = models.CharField(max_length=100)
     numberOfPatientCentralLineRemarks = models.CharField(max_length=5000,blank=True)
     totalNumberOfRestraintPatientsDays = models.CharField(max_length=100)
