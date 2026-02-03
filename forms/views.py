@@ -832,528 +832,405 @@ def NICU_data(request):
     
 
 from .forms import FirstFloorRawDataSerializer
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.response import Response
+from rest_framework import status
+from django.views.decorators.csrf import csrf_exempt
+
 @api_view(['POST'])
 @csrf_exempt
-@permission_classes([ HasRolePermission])
+@permission_classes([HasRolePermission])
 def firstfloor_rawdata(request):
-    if request.method == 'POST':
-        data = request.data
-        id = data.get('id')
-        name = data.get('name')
-        selected_date = data.get('selectedDate')
-        raw_data = data.get('raw_data', [])
+    data = request.data
 
-        # Check if data for the selected date already exists
-        if FirstFloorRawData.objects.filter(selectedDate=selected_date).exists():
-            return Response({'error': 'Data already exists for this date.'}, status=status.HTTP_400_BAD_REQUEST)
+    selected_date = data.get('selectedDate')
+    raw_data = data.get('raw_data', [])
 
-        if selected_date and raw_data:
-            record_data = {
-                'id': id,
-                'name': name,
-                'selectedDate': selected_date,
-                'raw_data': raw_data
-            }
-            serializer = FirstFloorRawDataSerializer(data=record_data)
+    # Check if data for the selected date already exists
+    if FirstFloorRawData.objects.filter(selectedDate=selected_date).exists():
+        return Response(
+            {'error': 'Data already exists for this date.'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
-            if serializer.is_valid():
-                # Create object but don't save yet
-                obj = serializer.save(commit=False)
+    if not selected_date or not raw_data:
+        return Response(
+            {'error': 'selectedDate and raw_data are required'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
-                # Get user id from request
-                user_identifier = request.data.get("auth-user-id")
+    serializer = FirstFloorRawDataSerializer(data=data)
 
-                # Set fields manually (ModelForm cannot receive extra args)
-                if not obj.created_by:
-                    obj.created_by = user_identifier
+    if serializer.is_valid():
+        user_identifier = data.get("auth-user-id")
 
-                obj.lastmodified_by = user_identifier
+        obj = serializer.save(
+            created_by=user_identifier,
+            lastmodified_by=user_identifier
+        )
 
-                # Save the model
-                obj.save()
+        return Response(
+            {"message": "Data submitted successfully"},
+            status=status.HTTP_201_CREATED
+        )
 
-                # serializer.save()
-                return Response("Data submitted successfully", status=status.HTTP_201_CREATED)
-            else:
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 from .forms import FirstSuitRawDataSerializer
-@api_view(['POST'])
+@api_view(["POST"])
 @csrf_exempt
-@permission_classes([ HasRolePermission])
+@permission_classes([HasRolePermission])
 def firstsuit_rawdata(request):
-    if request.method == 'POST':
-        data = request.data
-        id = data.get('id')
-        name = data.get('name')
-        selected_date = data.get('selectedDate')
-        raw_data = data.get('raw_data', [])
+    data = request.data
 
-        # Check if data for the selected date already exists
-        if FirstSuitRawData.objects.filter(selectedDate=selected_date).exists():
-            return Response({'error': 'Data already exists for this date.'}, status=status.HTTP_400_BAD_REQUEST)
+    selected_date = data.get("selectedDate")
+    raw_data = data.get("raw_data", [])
 
-        if selected_date and raw_data:
-            record_data = {
-                'id': id,
-                'name': name,
-                'selectedDate': selected_date,
-                'raw_data': raw_data
-            }
-            serializer = FirstSuitRawDataSerializer(data=record_data)
+    if not selected_date or not raw_data:
+        return Response(
+            {"error": "selectedDate and raw_data are required"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
-            if serializer.is_valid():
-                # Create object but don't save yet
-                obj = serializer.save(commit=False)
+    if FirstSuitRawData.objects.filter(selectedDate=selected_date).exists():
+        return Response(
+            {"error": "Data already exists for this date"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
-                # Get user id from request
-                user_identifier = request.data.get("auth-user-id")
+    serializer = FirstSuitRawDataSerializer(data=data)
 
-                # Set fields manually (ModelForm cannot receive extra args)
-                if not obj.created_by:
-                    obj.created_by = user_identifier
+    if serializer.is_valid():
+        serializer.save(
+            created_by=data.get("auth-user-id"),
+            lastmodified_by=data.get("auth-user-id")
+        )
+        return Response(
+            {"message": "Data submitted successfully"},
+            status=status.HTTP_201_CREATED
+        )
 
-                obj.lastmodified_by = user_identifier
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-                # Save the model
-                obj.save()
-
-                # serializer.save()
-                return Response("Data submitted successfully", status=status.HTTP_201_CREATED)
-            else:
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
 
 from .forms import SecondFloorRawDataSerializer
-@api_view(['POST'])
+@api_view(["POST"])
 @csrf_exempt
-@permission_classes([ HasRolePermission])
+@permission_classes([HasRolePermission])
 def secondfloor_rawdata(request):
-    if request.method == 'POST':
-        data = request.data
-        id = data.get('id')
-        name = data.get('name')
-        selected_date = data.get('selectedDate')
-        raw_data = data.get('raw_data', [])
+    data = request.data
 
-        # Check if data for the selected date already exists
-        if SecondFloorRawData.objects.filter(selectedDate=selected_date).exists():
-            return Response({'error': 'Data already exists for this date.'}, status=status.HTTP_400_BAD_REQUEST)
+    selected_date = data.get("selectedDate")
+    raw_data = data.get("raw_data", [])
 
-        if selected_date and raw_data:
-            record_data = {
-                'id': id,
-                'name': name,
-                'selectedDate': selected_date,
-                'raw_data': raw_data
-            }
-            serializer = SecondFloorRawDataSerializer(data=record_data)
+    if not selected_date or not raw_data:
+        return Response(
+            {"error": "selectedDate and raw_data are required"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
-            if serializer.is_valid():
-                # Create object but don't save yet
-                obj = serializer.save(commit=False)
+    if SecondFloorRawData.objects.filter(selectedDate=selected_date).exists():
+        return Response(
+            {"error": "Data already exists for this date"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
-                # Get user id from request
-                user_identifier = request.data.get("auth-user-id")
+    serializer = SecondFloorRawDataSerializer(data=data)
 
-                # Set fields manually (ModelForm cannot receive extra args)
-                if not obj.created_by:
-                    obj.created_by = user_identifier
+    if serializer.is_valid():
+        serializer.save(
+            created_by=data.get("auth-user-id"),
+            lastmodified_by=data.get("auth-user-id")
+        )
+        return Response(
+            {"message": "Data submitted successfully"},
+            status=status.HTTP_201_CREATED
+        )
 
-                obj.lastmodified_by = user_identifier
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-                # Save the model
-                obj.save()
-
-                # serializer.save()
-                return Response("Data submitted successfully", status=status.HTTP_201_CREATED)
-            else:
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        
 
 from .forms import SecondSuitRawDataSerializer
-@api_view(['POST'])
+@api_view(["POST"])
 @csrf_exempt
-@permission_classes([ HasRolePermission])
+@permission_classes([HasRolePermission])
 def secondsuit_rawdata(request):
-    if request.method == 'POST':
-        data = request.data
-        id = data.get('id')
-        name = data.get('name')
-        selected_date = data.get('selectedDate')
-        raw_data = data.get('raw_data', [])
+    data = request.data
 
-        # Check if data for the selected date already exists
-        if SecondSuitRawData.objects.filter(selectedDate=selected_date).exists():
-            return Response({'error': 'Data already exists for this date.'}, status=status.HTTP_400_BAD_REQUEST)
+    selected_date = data.get("selectedDate")
+    raw_data = data.get("raw_data", [])
 
-        if selected_date and raw_data:
-            record_data = {
-                'id': id,
-                'name': name,
-                'selectedDate': selected_date,
-                'raw_data': raw_data
-            }
-            serializer = SecondSuitRawDataSerializer(data=record_data)
+    if not selected_date or not raw_data:
+        return Response(
+            {"error": "selectedDate and raw_data are required"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
-            if serializer.is_valid():
-                # Create object but don't save yet
-                obj = serializer.save(commit=False)
+    if SecondSuitRawData.objects.filter(selectedDate=selected_date).exists():
+        return Response(
+            {"error": "Data already exists for this date"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
-                # Get user id from request
-                user_identifier = request.data.get("auth-user-id")
+    serializer = SecondSuitRawDataSerializer(data=data)
 
-                # Set fields manually (ModelForm cannot receive extra args)
-                if not obj.created_by:
-                    obj.created_by = user_identifier
+    if serializer.is_valid():
+        serializer.save(
+            created_by=data.get("auth-user-id"),
+            lastmodified_by=data.get("auth-user-id")
+        )
+        return Response(
+            {"message": "Data submitted successfully"},
+            status=status.HTTP_201_CREATED
+        )
 
-                obj.lastmodified_by = user_identifier
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-                # Save the model
-                obj.save()
-
-                # serializer.save()
-                return Response("Data submitted successfully", status=status.HTTP_201_CREATED)
-            else:
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
     
 from .forms import ThirdFloorRawDataSerializer
-@api_view(['POST'])
+@api_view(["POST"])
 @csrf_exempt
-@permission_classes([ HasRolePermission])
+@permission_classes([HasRolePermission])
 def thirdfloor_rawdata(request):
-    if request.method == 'POST':
-        data = request.data
-        id = data.get('id')
-        name = data.get('name')
-        selected_date = data.get('selectedDate')
-        raw_data = data.get('raw_data', [])
+    data = request.data
 
-        # Check if data for the selected date already exists
-        if ThirdFloorRawData.objects.filter(selectedDate=selected_date).exists():
-            return Response({'error': 'Data already exists for this date.'}, status=status.HTTP_400_BAD_REQUEST)
+    selected_date = data.get("selectedDate")
+    raw_data = data.get("raw_data", [])
 
-        if selected_date and raw_data:
-            record_data = {
-                'id': id,
-                'name': name,
-                'selectedDate': selected_date,
-                'raw_data': raw_data
-            }
-            serializer = ThirdFloorRawDataSerializer(data=record_data)
+    if not selected_date or not raw_data:
+        return Response(
+            {"error": "selectedDate and raw_data are required"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
-            if serializer.is_valid():
-                # Create object but don't save yet
-                obj = serializer.save(commit=False)
+    if ThirdFloorRawData.objects.filter(selectedDate=selected_date).exists():
+        return Response(
+            {"error": "Data already exists for this date"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
-                # Get user id from request
-                user_identifier = request.data.get("auth-user-id")
+    serializer = ThirdFloorRawDataSerializer(data=data)
 
-                # Set fields manually (ModelForm cannot receive extra args)
-                if not obj.created_by:
-                    obj.created_by = user_identifier
+    if serializer.is_valid():
+        serializer.save(
+            created_by=data.get("auth-user-id"),
+            lastmodified_by=data.get("auth-user-id")
+        )
+        return Response(
+            {"message": "Data submitted successfully"},
+            status=status.HTTP_201_CREATED
+        )
 
-                obj.lastmodified_by = user_identifier
-
-                # Save the model
-                obj.save()
-
-                # serializer.save()
-                return Response("Data submitted successfully", status=status.HTTP_201_CREATED)
-            else:
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 from .forms import SICURawDataSerializer
-@api_view(['POST'])
+@api_view(["POST"])
 @csrf_exempt
-@permission_classes([ HasRolePermission])
+@permission_classes([HasRolePermission])
 def sicu_rawdata(request):
-    if request.method == 'POST':
-        data = request.data
-        id = data.get('id')
-        name = data.get('name')
-        selected_date = data.get('selectedDate')
-        raw_data = data.get('raw_data', [])
+    data = request.data
+    selected_date = data.get("selectedDate")
+    raw_data = data.get("raw_data", [])
 
-        # Check if data for the selected date already exists
-        if SICURawData.objects.filter(selectedDate=selected_date).exists():
-            return Response({'error': 'Data already exists for this date.'}, status=status.HTTP_400_BAD_REQUEST)
+    if not selected_date or not raw_data:
+        return Response({"error": "Invalid data"}, status=400)
 
-        if selected_date and raw_data:
-            record_data = {
-                'id': id,
-                'name': name,
-                'selectedDate': selected_date,
-                'raw_data': raw_data
-            }
-            serializer = SICURawDataSerializer(data=record_data)
+    if SICURawData.objects.filter(selectedDate=selected_date).exists():
+        return Response({"error": "Data already exists"}, status=400)
 
-            if serializer.is_valid():
-            # Create object but don't save yet
-                obj = serializer.save(commit=False)
+    serializer = SICURawDataSerializer(data=data)
 
-                # Get user id from request
-                user_identifier = request.data.get("auth-user-id")
+    if serializer.is_valid():
+        serializer.save(
+            created_by=data.get("auth-user-id"),
+            lastmodified_by=data.get("auth-user-id")
+        )
+        return Response({"message": "Success"}, status=201)
 
-                # Set fields manually (ModelForm cannot receive extra args)
-                if not obj.created_by:
-                    obj.created_by = user_identifier
+    return Response(serializer.errors, status=400)
 
-                obj.lastmodified_by = user_identifier
-
-                # Save the model
-                obj.save()
-
-                # serializer.save()
-                return Response("Data submitted successfully", status=status.HTTP_201_CREATED)
-            else:
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
 
 from .forms import MICURawDataSerializer
-@api_view(['POST'])
+@api_view(["POST"])
 @csrf_exempt
-@permission_classes([ HasRolePermission])
+@permission_classes([HasRolePermission])
 def micu_rawdata(request):
-    if request.method == 'POST':
-        data = request.data
-        id = data.get('id')
-        name = data.get('name')
-        selected_date = data.get('selectedDate')
-        raw_data = data.get('raw_data', [])
+    data = request.data
+    selected_date = data.get("selectedDate")
+    raw_data = data.get("raw_data", [])
 
-        # Check if data for the selected date already exists
-        if MICURawData.objects.filter(selectedDate=selected_date).exists():
-            return Response({'error': 'Data already exists for this date.'}, status=status.HTTP_400_BAD_REQUEST)
+    if not selected_date or not raw_data:
+        return Response(
+            {"error": "selectedDate and raw_data are required"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
-        if selected_date and raw_data:
-            record_data = {
-                'id': id,
-                'name': name,
-                'selectedDate': selected_date,
-                'raw_data': raw_data
-            }
-            serializer = MICURawDataSerializer(data=record_data)
+    if MICURawData.objects.filter(selectedDate=selected_date).exists():
+        return Response(
+            {"error": "Data already exists for this date"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
-            if serializer.is_valid():
-            # Create object but don't save yet
-                obj = serializer.save(commit=False)
+    serializer = MICURawDataSerializer(data=data)
 
-                # Get user id from request
-                user_identifier = request.data.get("auth-user-id")
+    if serializer.is_valid():
+        serializer.save(
+            created_by=data.get("auth-user-id"),
+            lastmodified_by=data.get("auth-user-id")
+        )
+        return Response(
+            {"message": "Data submitted successfully"},
+            status=status.HTTP_201_CREATED
+        )
 
-                # Set fields manually (ModelForm cannot receive extra args)
-                if not obj.created_by:
-                    obj.created_by = user_identifier
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-                obj.lastmodified_by = user_identifier
-
-                # Save the model
-                obj.save()
-
-                # serializer.save()
-                return Response("Data submitted successfully", status=status.HTTP_201_CREATED)
-            else:
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        
     
 from .forms import NICURawDataSerializer
-@api_view(['POST'])
+@api_view(["POST"])
 @csrf_exempt
-@permission_classes([ HasRolePermission])
+@permission_classes([HasRolePermission])
 def nicu_rawdata(request):
-    if request.method == 'POST':
-        data = request.data
-        id = data.get('id')
-        name = data.get('name')
-        selected_date = data.get('selectedDate')
-        raw_data = data.get('raw_data', [])
+    data = request.data
+    selected_date = data.get("selectedDate")
+    raw_data = data.get("raw_data", [])
 
-        # Check if data for the selected date already exists
-        if NICURawData.objects.filter(selectedDate=selected_date).exists():
-            return Response({'error': 'Data already exists for this date.'}, status=status.HTTP_400_BAD_REQUEST)
+    if not selected_date or not raw_data:
+        return Response(
+            {"error": "selectedDate and raw_data are required"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
-        if selected_date and raw_data:
-            record_data = {
-                'id': id,
-                'name': name,
-                'selectedDate': selected_date,
-                'raw_data': raw_data
-            }
-            serializer = NICURawDataSerializer(data=record_data)
+    if NICURawData.objects.filter(selectedDate=selected_date).exists():
+        return Response(
+            {"error": "Data already exists for this date"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
-            if serializer.is_valid():
-            # Create object but don't save yet
-                obj = serializer.save(commit=False)
+    serializer = NICURawDataSerializer(data=data)
 
-                # Get user id from request
-                user_identifier = request.data.get("auth-user-id")
+    if serializer.is_valid():
+        serializer.save(
+            created_by=data.get("auth-user-id"),
+            lastmodified_by=data.get("auth-user-id")
+        )
+        return Response(
+            {"message": "Data submitted successfully"},
+            status=status.HTTP_201_CREATED
+        )
 
-                # Set fields manually (ModelForm cannot receive extra args)
-                if not obj.created_by:
-                    obj.created_by = user_identifier
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-                obj.lastmodified_by = user_identifier
-
-                # Save the model
-                obj.save()
-
-                # serializer.save()
-                return Response("Data submitted successfully", status=status.HTTP_201_CREATED)
-            else:
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        
 
 from .forms import EmergencyRoomRawDataSerializer
-@api_view(['POST'])
+@api_view(["POST"])
 @csrf_exempt
-@permission_classes([ HasRolePermission])
+@permission_classes([HasRolePermission])
 def emergencyroom_rawdata(request):
-    if request.method == 'POST':
-        data = request.data
-        id = data.get('id')
-        name = data.get('name')
-        selected_date = data.get('selectedDate')
-        raw_data = data.get('raw_data', [])
+    data = request.data
+    selected_date = data.get("selectedDate")
+    raw_data = data.get("raw_data", [])
 
-        # Check if data for the selected date already exists
-        if EmergencyRoomRawData.objects.filter(selectedDate=selected_date).exists():
-            return Response({'error': 'Data already exists for this date.'}, status=status.HTTP_400_BAD_REQUEST)
+    if not selected_date or not raw_data:
+        return Response(
+            {"error": "selectedDate and raw_data are required"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
-        if selected_date and raw_data:
-            record_data = {
-                'id': id,
-                'name': name,
-                'selectedDate': selected_date,
-                'raw_data': raw_data
-            }
-            serializer = EmergencyRoomRawDataSerializer(data=record_data)
+    if EmergencyRoomRawData.objects.filter(selectedDate=selected_date).exists():
+        return Response(
+            {"error": "Data already exists for this date"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
-            if serializer.is_valid():
-                serializer.save()
-                return Response("Data submitted successfully", status=status.HTTP_201_CREATED)
-            else:
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        
+    serializer = EmergencyRoomRawDataSerializer(data=data)
+
+    if serializer.is_valid():
+        serializer.save(
+            created_by=data.get("auth-user-id"),
+            lastmodified_by=data.get("auth-user-id")
+        )
+        return Response(
+            {"message": "Data submitted successfully"},
+            status=status.HTTP_201_CREATED
+        )
+
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 from .forms import ChemoWardRawDataSerializer
-@api_view(['POST'])
+@api_view(["POST"])
 @csrf_exempt
-@permission_classes([ HasRolePermission])
+@permission_classes([HasRolePermission])
 def chemoward_rawdata(request):
-    if request.method == 'POST':
-        data = request.data
-        id = data.get('id')
-        name = data.get('name')
-        selected_date = data.get('selectedDate')
-        raw_data = data.get('raw_data', [])
+    data = request.data
+    selected_date = data.get("selectedDate")
+    raw_data = data.get("raw_data", [])
 
-        # Check if data for the selected date already exists
-        if ChemoWardRawData.objects.filter(selectedDate=selected_date).exists():
-            return Response({'error': 'Data already exists for this date.'}, status=status.HTTP_400_BAD_REQUEST)
+    if not selected_date or not raw_data:
+        return Response(
+            {"error": "selectedDate and raw_data are required"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
-        if selected_date and raw_data:
-            record_data = {
-                'id': id,
-                'name': name,
-                'selectedDate': selected_date,
-                'raw_data': raw_data
-            }
-            serializer = ChemoWardRawDataSerializer(data=record_data)
+    if ChemoWardRawData.objects.filter(selectedDate=selected_date).exists():
+        return Response(
+            {"error": "Data already exists for this date"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
-            if serializer.is_valid():
-                # Create object but don't save yet
-                obj = serializer.save(commit=False)
+    serializer = ChemoWardRawDataSerializer(data=data)
 
-                # Get user id from request
-                user_identifier = request.data.get("auth-user-id")
+    if serializer.is_valid():
+        serializer.save(
+            created_by=data.get("auth-user-id"),
+            lastmodified_by=data.get("auth-user-id")
+        )
+        return Response(
+            {"message": "Data submitted successfully"},
+            status=status.HTTP_201_CREATED
+        )
 
-                # Set fields manually (ModelForm cannot receive extra args)
-                if not obj.created_by:
-                    obj.created_by = user_identifier
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-                obj.lastmodified_by = user_identifier
-
-                # Save the model
-                obj.save()
-
-                # serializer.save()
-                return Response("Data submitted successfully", status=status.HTTP_201_CREATED)
-            else:
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        
 
 from .forms import RecoverywardRawDataSerializer
-@api_view(['POST'])
+@api_view(["POST"])
 @csrf_exempt
-@permission_classes([ HasRolePermission])
+@permission_classes([HasRolePermission])
 def recoveryward_rawdata(request):
-    if request.method == 'POST':
-        data = request.data
-        id = data.get('id')
-        name = data.get('name')
-        selected_date = data.get('selectedDate')
-        raw_data = data.get('raw_data', [])
+    data = request.data
+    selected_date = data.get("selectedDate")
+    raw_data = data.get("raw_data", [])
 
-        # Check if data for the selected date already exists
-        if RecoverywardRawData.objects.filter(selectedDate=selected_date).exists():
-            return Response({'error': 'Data already exists for this date.'}, status=status.HTTP_400_BAD_REQUEST)
+    if not selected_date or not raw_data:
+        return Response(
+            {"error": "selectedDate and raw_data are required"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
-        if selected_date and raw_data:
-            record_data = {
-                'id': id,
-                'name': name,
-                'selectedDate': selected_date,
-                'raw_data': raw_data
-            }
-            serializer = RecoverywardRawDataSerializer(data=record_data)
+    if RecoverywardRawData.objects.filter(selectedDate=selected_date).exists():
+        return Response(
+            {"error": "Data already exists for this date"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
-            if serializer.is_valid():
-                # Create object but don't save yet
-                obj = serializer.save(commit=False)
+    serializer = RecoverywardRawDataSerializer(data=data)
 
-                # Get user id from request
-                user_identifier = request.data.get("auth-user-id")
+    if serializer.is_valid():
+        serializer.save(
+            created_by=data.get("auth-user-id"),
+            lastmodified_by=data.get("auth-user-id")
+        )
+        return Response(
+            {"message": "Data submitted successfully"},
+            status=status.HTTP_201_CREATED
+        )
 
-                # Set fields manually (ModelForm cannot receive extra args)
-                if not obj.created_by:
-                    obj.created_by = user_identifier
-
-                obj.lastmodified_by = user_identifier
-
-                # Save the model
-                obj.save()
-
-                # serializer.save()
-                return Response("Data submitted successfully", status=status.HTTP_201_CREATED)
-            else:
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 from datetime import datetime
 import calendar

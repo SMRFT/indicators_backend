@@ -174,75 +174,93 @@ class FirstFloorRawDataSerializer(serializers.ModelSerializer):
         model = FirstFloorRawData
         fields = '__all__'
 
+    def create(self, validated_data):
+        request = self.context.get("request")
 
-from .models import FirstSuitRawData
+        user_identifier = None
+        if request:
+            user_identifier = request.data.get("auth-user-id")
+
+        validated_data["created_by"] = user_identifier
+        validated_data["lastmodified_by"] = user_identifier
+
+        return super().create(validated_data)
+
+
+from rest_framework import serializers
+from .models import (
+    FirstSuitRawData,
+    SecondFloorRawData,
+    SecondSuitRawData,
+    ThirdFloorRawData,
+    SICURawData,
+    MICURawData,
+    NICURawData,
+    EmergencyRoomRawData,
+    ChemoWardRawData,
+    RecoverywardRawData
+)
+
+
 class FirstSuitRawDataSerializer(serializers.ModelSerializer):
     class Meta:
         model = FirstSuitRawData
-        fields = '__all__'
+        fields = "__all__"
 
 
-from .models import SecondFloorRawData
-class SecondFloorRawDataSerializer(forms.ModelForm):
+class SecondFloorRawDataSerializer(serializers.ModelSerializer):
     class Meta:
         model = SecondFloorRawData
-        fields = '__all__'
+        fields = "__all__"
 
 
-from .models import SecondSuitRawData
-class SecondSuitRawDataSerializer(forms.ModelForm):
+class SecondSuitRawDataSerializer(serializers.ModelSerializer):
     class Meta:
         model = SecondSuitRawData
-        fields = '__all__'
+        fields = "__all__"
 
 
-from .models import ThirdFloorRawData
-class ThirdFloorRawDataSerializer(forms.ModelForm):
+class ThirdFloorRawDataSerializer(serializers.ModelSerializer):
     class Meta:
         model = ThirdFloorRawData
-        fields = '__all__'
+        fields = "__all__"
 
 
-from .models import SICURawData
-class SICURawDataSerializer(forms.ModelForm):
+class SICURawDataSerializer(serializers.ModelSerializer):
     class Meta:
         model = SICURawData
-        fields = '__all__'
+        fields = "__all__"
 
 
-from .models import MICURawData
-class MICURawDataSerializer(forms.ModelForm):
+class MICURawDataSerializer(serializers.ModelSerializer):
     class Meta:
         model = MICURawData
-        fields = '__all__'
+        fields = "__all__"
 
 
-from .models import NICURawData
-class NICURawDataSerializer(forms.ModelForm):
+class NICURawDataSerializer(serializers.ModelSerializer):
     class Meta:
         model = NICURawData
-        fields = '__all__'
+        fields = "__all__"
 
 
-from .models import EmergencyRoomRawData
-class EmergencyRoomRawDataSerializer(forms.ModelForm):
+class EmergencyRoomRawDataSerializer(serializers.ModelSerializer):
     class Meta:
         model = EmergencyRoomRawData
-        fields = '__all__'
+        fields = "__all__"
 
 
-from .models import ChemoWardRawData
-class ChemoWardRawDataSerializer(forms.ModelForm):
+class ChemoWardRawDataSerializer(serializers.ModelSerializer):
     class Meta:
         model = ChemoWardRawData
-        fields = '__all__'
+        fields = "__all__"
 
 
-from .models import RecoverywardRawData
-class RecoverywardRawDataSerializer(forms.ModelForm):
+class RecoverywardRawDataSerializer(serializers.ModelSerializer):
     class Meta:
         model = RecoverywardRawData
-        fields = '__all__'
+        fields = "__all__"
+
 
 
 from .models import AvailabilityOfRoomsAndBeds
