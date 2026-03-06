@@ -1533,22 +1533,15 @@ def HandHygenieAuditView(request):
     if request.method == 'POST':        
         serializer = HandHygenieAuditSerializer(data=request.data)
         if serializer.is_valid():
-            # Create object but don't save yet
-            obj = serializer.save(commit=False)
-
             # Get user id from request
             user_identifier = request.data.get("auth-user-id")
 
-            # Set fields manually (ModelForm cannot receive extra args)
-            if not obj.created_by:
-                obj.created_by = user_identifier
+            # Pass extra attributes to save() instead of using commit=False
+            serializer.save(
+                created_by=user_identifier,
+                lastmodified_by=user_identifier
+            )
 
-            obj.lastmodified_by = user_identifier
-
-            # Save the model
-            obj.save()
-
-            # serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
