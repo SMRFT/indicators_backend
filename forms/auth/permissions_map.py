@@ -125,10 +125,10 @@ PAGE_MAPPING={
     '/HandHygenieAudit/': 'SHI-P-HAND',
     '/HandHygieneReport/': 'SHI-P-HANDR',
     '/TrainingFeedBackReport/': 'SHI-P-TRAINR',
-    '/IncidentReport/': 'SHI-P-LOGIN',
-    '/SupervisorInvestigation/': 'SHI-P-LOGIN',
-    '/IncidentClassification/': 'SHI-P-LOGIN',
-    '/get_incharges/': 'SHI-P-LOGIN',
+    '/IncidentReport/': 'SHI-P-INC',
+    '/SupervisorInvestigation/': 'SHI-P-SUPINV',
+    '/IncidentClassification/': 'SHI-P-INCC',
+    '/get_incharges/': 'SHI-P-GI',
 }
 
 
