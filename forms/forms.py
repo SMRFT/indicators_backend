@@ -198,7 +198,8 @@ from .models import (
     NICURawData,
     EmergencyRoomRawData,
     ChemoWardRawData,
-    RecoverywardRawData
+    RecoverywardRawData,
+    OPDRawData
 )
 
 
@@ -261,7 +262,14 @@ class RecoverywardRawDataSerializer(serializers.ModelSerializer):
         model = RecoverywardRawData
         fields = "__all__"
 
-
+class OPDRawDataSerializer(serializers.ModelSerializer):
+    id = serializers.SerializerMethodField()
+    class Meta:
+        model = OPDRawData
+        fields = "__all__"
+        
+    def get_id(self, obj):
+        return str(obj.id)  # Convert ObjectId to string
 
 from .models import AvailabilityOfRoomsAndBeds
 class AvailabilityOfRoomsAndBedsSerializer(forms.ModelForm):
@@ -307,4 +315,66 @@ from .models import MockDrill
 class MockDrillSerializer(serializers.ModelSerializer):
     class Meta:
         model = MockDrill
+        fields = '__all__'
+
+
+from .models import IncidentReport, SupervisorInvestigation
+
+class IncidentReportSerializer(serializers.ModelSerializer):
+    id = serializers.SerializerMethodField()
+
+    class Meta:
+        model = IncidentReport
+        fields = '__all__'
+
+    def get_id(self, obj):
+        val = obj.pk or getattr(obj, 'id', None) or getattr(obj, '_id', None)
+        return str(val) if val else None
+
+
+class SupervisorInvestigationSerializer(serializers.ModelSerializer):
+    incidentNo = serializers.SerializerMethodField()
+
+    class Meta:
+        model = SupervisorInvestigation
+        fields = '__all__'
+
+    def get_incidentNo(self, obj):
+        incident_id = getattr(obj, 'incidentId', None)
+        if not incident_id:
+            return "-"
+        
+        from .models import IncidentReport
+        try:
+            incident = IncidentReport.objects.filter(incidentNo=incident_id).first()
+            if incident:
+                return incident.incidentNo
+        except Exception:
+            pass
+
+        try:
+            from bson import ObjectId
+            if len(incident_id) == 24:
+                from django.conf import settings
+                import pymongo
+                db_config = settings.DATABASES['default']
+                host = db_config.get('CLIENT', {}).get('host', 'mongodb://localhost:27017/')
+                db_name = db_config.get('NAME', 'Indicators')
+                
+                client = pymongo.MongoClient(host)
+                db = client[db_name]
+                doc = db['forms_incidentreport'].find_one({'_id': ObjectId(incident_id)})
+                if doc and 'incidentNo' in doc:
+                    return doc['incidentNo']
+        except Exception:
+            pass
+
+        return incident_id
+
+
+from .models import IncidentClassification
+
+class IncidentClassificationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = IncidentClassification
         fields = '__all__'

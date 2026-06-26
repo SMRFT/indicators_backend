@@ -6,7 +6,7 @@ from .views import lab_data,CT_data,MRI_data,Xray_data,OPD_data,OT_data,HR_data,
 from .views import physiotherapy_data,dialysis_data
 from .views import emergency_room_data,MRD_data,recovery_ward_data,chemo_ward_data
 from .views import firstfloor_rawdata,firstsuit_rawdata,secondfloor_rawdata,secondsuit_rawdata,thirdfloor_rawdata,recoveryward_rawdata
-from .views import SICU_data,MICU_data,NICU_data,micu_rawdata,nicu_rawdata,sicu_rawdata,chemoward_rawdata,emergencyroom_rawdata
+from .views import SICU_data,MICU_data,NICU_data,micu_rawdata,nicu_rawdata,sicu_rawdata,chemoward_rawdata,emergencyroom_rawdata, opd_rawdata
 from .views import availabilityofroomsandbeds,get_export_data,update_export_data,delete_export_data,get_export_rawdata,update_export_rawdata,get_formula_data
 
 urlpatterns = [
@@ -59,4 +59,10 @@ urlpatterns = [
     path('TrainingFeedBackReport/', get_all_training_feedback, name ='get_all_training_feedback'),
     path('mockdrills/', views.create_mockdrill),
     path('Pharmacy/', views.Pharmacy_data, name = 'Pharmacy_data'),
+    path('OPDRawData/', opd_rawdata, name = 'opd_rawdata'),
+    path('get-next-incident-no/', views.get_next_incident_no, name = 'get_next_incident_no'),
+    path('IncidentReport/', views.IncidentReportView, name = 'IncidentReportView'),
+    path('SupervisorInvestigation/', views.SupervisorInvestigationView, name = 'SupervisorInvestigationView'),
+    path('IncidentClassification/', views.IncidentClassificationView, name = 'IncidentClassificationView'),
+    path('get_incharges/', views.get_incharges, name = 'get_incharges'),
 ]

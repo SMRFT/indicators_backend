@@ -1,5 +1,6 @@
 # models.py
 from django.db import models
+from djongo import models as djongo_models
 
 
 
@@ -1102,7 +1103,14 @@ class AvailabilityOfRoomsAndBeds(AuditModel):
     def __str__(self):
         return f"Availability Of Rooms And Beds: {self.selectedward}"
     
-
+class OPDRawData(AuditModel):
+    id = models.CharField(max_length=100)
+    name = models.CharField(max_length=100)
+    selectedDate = models.CharField(max_length=100,primary_key=True)
+    raw_data = models.JSONField()
+    ward = models.CharField(max_length=100, default='OPD Raw Data', blank=True, null=True)
+    def __str__(self):
+        return f"OPD RawData for {self.selectedDate}"
 
 class HandHygenieAudit(AuditModel):
     id = models.AutoField(primary_key=True)
@@ -1142,6 +1150,7 @@ class TrainingFeedBack(AuditModel):
 
 # models.py
 from django.db import models
+from djongo import models as djongo_models
 class MockDrill(AuditModel):
     id = models.CharField(max_length=100)
     name = models.CharField(max_length=100)
@@ -1150,3 +1159,119 @@ class MockDrill(AuditModel):
     ward = models.CharField(max_length=100, default='MockDrill', blank=True, null=True)
     def __str__(self):
         return f"MockDrill on {self.selectedDate}"
+
+
+class IncidentReport(AuditModel):
+    incidentNo = models.CharField(max_length=100, primary_key=True)
+    incidentDate = models.CharField(max_length=100)
+    incidentTime = models.CharField(max_length=100)
+    incidentLocation = models.CharField(max_length=500)
+    personInvolvedType = models.CharField(max_length=100) # Patient, Employee, Instrument/Tools, Others
+    personInvolvedOthersDetails = models.CharField(max_length=500, blank=True, null=True)
+    patientName = models.CharField(max_length=200, blank=True, null=True)
+    patientAgeSex = models.CharField(max_length=100, blank=True, null=True)
+    patientUhid = models.CharField(max_length=100, blank=True, null=True)
+    patientDoctor = models.CharField(max_length=200, blank=True, null=True)
+    employeeName = models.CharField(max_length=200, blank=True, null=True)
+    employeeAgeSex = models.CharField(max_length=100, blank=True, null=True)
+    employeeDept = models.CharField(max_length=200, blank=True, null=True)
+    instrumentToolsDetails = models.CharField(max_length=500, blank=True, null=True)
+    mrNo = models.CharField(max_length=100, blank=True, null=True)
+    designation = models.CharField(max_length=200, blank=True, null=True)
+    idNo = models.CharField(max_length=100, blank=True, null=True)
+    
+    # store checklist classification as JSONField
+    classifications = models.JSONField(default=dict, blank=True)
+    
+    descriptionOfIncident = models.TextField()
+    reportedBy = models.CharField(max_length=200)
+    reportedByDesignation = models.CharField(max_length=200, blank=True, null=True)
+    reportedBySignature = models.CharField(max_length=200, blank=True, null=True)
+    reportedByEmpId = models.CharField(max_length=100, blank=True, null=True)
+    reportedByDateTime = models.CharField(max_length=100)
+    witnessName = models.CharField(max_length=200, blank=True, null=True)
+    
+    immediateCorrection = models.TextField(blank=True, null=True)
+    correctionName = models.CharField(max_length=200, blank=True, null=True)
+    correctionDesignation = models.CharField(max_length=200, blank=True, null=True)
+    correctionSignature = models.CharField(max_length=200, blank=True, null=True)
+    correctionEmpId = models.CharField(max_length=100, blank=True, null=True)
+    correctionDateTime = models.CharField(max_length=100, blank=True, null=True)
+
+    def save(self, *args, **kwargs):
+        if not self.incidentNo:
+            from datetime import datetime
+            current_year = datetime.now().year
+            prefix = f"INC-{current_year}-"
+            
+            # Find the last incident for this year
+            last_incident = IncidentReport.objects.filter(incidentNo__startswith=prefix).order_by('-incidentNo').first()
+            if last_incident and last_incident.incidentNo:
+                try:
+                    last_num = int(last_incident.incidentNo.split('-')[-1])
+                    next_num = last_num + 1
+                except (ValueError, IndexError):
+                    next_num = 1
+            else:
+                next_num = 1
+                
+            self.incidentNo = f"{prefix}{next_num:04d}"
+            
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"IncidentReport {self.pk} on {self.incidentDate}"
+
+
+class SupervisorInvestigation(AuditModel):
+    id = models.CharField(max_length=100, primary_key=True, blank=True)
+    incidentId = models.CharField(max_length=100) # links to IncidentReport id
+    
+    why1 = models.TextField(blank=True, null=True)
+    why2 = models.TextField(blank=True, null=True)
+    why3 = models.TextField(blank=True, null=True)
+    why4 = models.TextField(blank=True, null=True)
+    why5 = models.TextField(blank=True, null=True)
+    
+    investigationName = models.CharField(max_length=200, blank=True, null=True)
+    investigationDeptDesignation = models.CharField(max_length=200, blank=True, null=True)
+    investigationSignatureEmpId = models.CharField(max_length=200, blank=True, null=True)
+    investigationDateTime = models.CharField(max_length=100, blank=True, null=True)
+    
+    correctiveAction = models.TextField(blank=True, null=True)
+    correctiveName = models.CharField(max_length=200, blank=True, null=True)
+    correctiveDeptDesignation = models.CharField(max_length=200, blank=True, null=True)
+    correctiveSignatureEmpId = models.CharField(max_length=200, blank=True, null=True)
+    correctiveDateTime = models.CharField(max_length=100, blank=True, null=True)
+    
+    preventiveAction = models.TextField(blank=True, null=True)
+    preventiveName = models.CharField(max_length=200, blank=True, null=True)
+    preventiveDeptDesignation = models.CharField(max_length=200, blank=True, null=True)
+    preventiveSignatureEmpId = models.CharField(max_length=200, blank=True, null=True)
+    preventiveDateTime = models.CharField(max_length=100, blank=True, null=True)
+    
+    # Quality department fields
+    qualityReceivedBy = models.CharField(max_length=200, blank=True, null=True)
+    qualityReceivedDeptDesignation = models.CharField(max_length=200, blank=True, null=True)
+    qualityReceivedSignatureEmpId = models.CharField(max_length=200, blank=True, null=True)
+    qualityReceivedDateTime = models.CharField(max_length=100, blank=True, null=True)
+    
+    qualityClassification = models.CharField(max_length=100, blank=True, null=True) # No harm / Near Miss / Adverse Event / Sentinel Event
+    qualityRemarks = models.TextField(blank=True, null=True)
+    qualityVerifiedByHead = models.CharField(max_length=200, blank=True, null=True)
+    qualityVerifiedDateTime = models.CharField(max_length=100, blank=True, null=True)
+
+    def __str__(self):
+        return f"SupervisorInvestigation for Incident {self.incidentId}"
+
+
+class IncidentClassification(AuditModel):
+    id = models.CharField(max_length=100, primary_key=True, blank=True)
+    category_key = models.CharField(max_length=100, blank=True, null=True)
+    title = models.CharField(max_length=200, blank=True, null=True)
+    items = models.JSONField(default=list, blank=True)
+    incharge_id = models.CharField(max_length=100, blank=True, null=True)
+    incharge_name = models.CharField(max_length=200, blank=True, null=True)
+
+    def __str__(self):
+        return self.title
