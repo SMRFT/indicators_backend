@@ -1764,7 +1764,7 @@ from .forms import IncidentReportSerializer, SupervisorInvestigationSerializer
 
 @api_view(['POST', 'GET'])
 @csrf_exempt
-# @permission_classes([HasRolePermission])
+@permission_classes([HasRolePermission])
 def IncidentReportView(request):
     if request.method == 'POST':
         # Copy data so we can mutate it
@@ -1931,7 +1931,7 @@ def get_user_profile_role_and_details(user_identifier):
 
 @api_view(['POST', 'GET'])
 @csrf_exempt
-# @permission_classes([HasRolePermission])
+@permission_classes([HasRolePermission])
 def SupervisorInvestigationView(request):
     if request.method == 'POST':
         incident_id = request.data.get("incidentId")
@@ -2064,6 +2064,7 @@ def SupervisorInvestigationView(request):
 
 @api_view(['POST', 'GET', 'DELETE'])
 @csrf_exempt
+@permission_classes([HasRolePermission])
 def IncidentClassificationView(request):
     from .models import IncidentClassification
     from .forms import IncidentClassificationSerializer
@@ -2247,6 +2248,7 @@ def IncidentClassificationView(request):
 
 from django.db.models import Q
 @api_view(['GET'])
+@permission_classes([HasRolePermission])
 def get_incharges(request):
     from django.conf import settings
     import pymongo
