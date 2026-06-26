@@ -1232,6 +1232,43 @@ def recoveryward_rawdata(request):
 
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
+from .forms import OPDRawDataSerializer
+@api_view(["POST"])
+@csrf_exempt
+# @permission_classes([HasRolePermission])
+def opd_rawdata(request):
+    data = request.data
+    selected_date = data.get("selectedDate")
+    raw_data = data.get("raw_data", [])
+
+    if not selected_date or not raw_data:
+        return Response(
+            {"error": "selectedDate and raw_data are required"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    if OPDRawData.objects.filter(selectedDate=selected_date).exists():
+        return Response(
+            {"error": "Data already exists for this date"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    serializer = OPDRawDataSerializer(data=data)
+
+    if serializer.is_valid():
+        serializer.save(
+            created_by=data.get("auth-user-id"),
+            lastmodified_by=data.get("auth-user-id")
+        )
+        return Response(
+            {"message": "Data submitted successfully"},
+            status=status.HTTP_201_CREATED
+        )
+
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 from datetime import datetime
 import calendar
 from django.http import JsonResponse
@@ -1462,6 +1499,45 @@ def availabilityofroomsandbeds(request, ward):
         return JsonResponse({'error': 'An error occurred while processing your request'}, status=500)
     
 
+from .models import OPDRawData
+from .forms import OPDRawDataSerializer
+
+@api_view(["POST"])
+@csrf_exempt
+@permission_classes([HasRolePermission])
+def opd_rawdata(request):
+    data = request.data
+
+    selected_date = data.get("selectedDate")
+    raw_data = data.get("raw_data", [])
+
+    if not selected_date or not raw_data:
+        return Response(
+            {"error": "selectedDate and raw_data are required"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    if OPDRawData.objects.filter(selectedDate=selected_date).exists():
+        return Response(
+            {"error": "Data already exists for this date."},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    serializer = OPDRawDataSerializer(data=data)
+
+    if serializer.is_valid():
+        serializer.save(
+            created_by=data.get("auth-user-id"),
+            lastmodified_by=data.get("auth-user-id")
+        )
+        return Response(
+            {"message": "Data submitted successfully"},
+            status=status.HTTP_201_CREATED
+        )
+
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 from .models import FrontOffice,FirstFloor,FirstSuit,SecondFloor,SecondSuit,ThirdFloor,Lab,CT,MRI,Xray,Pharmacy
 from .models import OT,MRD,MICU,NICU,SICU,RecoveryWard,ChemoWard,Physiotherapy,Dialysis,EmergencyRoom,OPD,HR 
 def get_ward_model(ward):
@@ -1500,7 +1576,7 @@ def get_ward_model(ward):
     
 
 from .models import FirstFloorRawData,SecondFloorRawData,SecondSuitRawData,FirstSuitRawData,ThirdFloorRawData 
-from .models import NICURawData,MICURawData,SICURawData,EmergencyRoomRawData,RecoverywardRawData,ChemoWardRawData 
+from .models import NICURawData,MICURawData,SICURawData,EmergencyRoomRawData,RecoverywardRawData,ChemoWardRawData ,OPDRawData
 def get_rawdata_model(ward):
     rawdata_model_map = {
         'First Floor Raw Data': FirstFloorRawData,
@@ -1514,6 +1590,8 @@ def get_rawdata_model(ward):
         'EmergencyRoom Raw Data': EmergencyRoomRawData,
         'Recoveryward Raw Data': RecoverywardRawData,
         'ChemoWard Raw Data': ChemoWardRawData,
+        'OPD Raw Data': OPDRawData,
+
     }
     selected_rawdata_model = rawdata_model_map.get(ward, None)
     if selected_rawdata_model:
@@ -1679,3 +1757,529 @@ def create_mockdrill(request):
         serializer.save()
         return Response(serializer.data)
     return Response(serializer.errors, status=400)
+
+
+from .models import IncidentReport, SupervisorInvestigation
+from .forms import IncidentReportSerializer, SupervisorInvestigationSerializer
+
+@api_view(['POST', 'GET'])
+@csrf_exempt
+@permission_classes([HasRolePermission])
+def IncidentReportView(request):
+    if request.method == 'POST':
+        # Copy data so we can mutate it
+        data = request.data.copy() if hasattr(request.data, 'copy') else dict(request.data)
+        
+        # Generate incidentNo in view
+        from datetime import datetime
+        current_year = datetime.now().year
+        prefix = f"INC-{current_year}-"
+        
+        last_incident = IncidentReport.objects.filter(incidentNo__startswith=prefix).order_by('-incidentNo').first()
+        if last_incident and last_incident.incidentNo:
+            try:
+                last_num = int(last_incident.incidentNo.split('-')[-1])
+                next_num = last_num + 1
+            except (ValueError, IndexError):
+                next_num = 1
+        else:
+            next_num = 1
+            
+        incident_no = f"{prefix}{next_num:04d}"
+        data['incidentNo'] = incident_no
+
+        serializer = IncidentReportSerializer(data=data)
+        if serializer.is_valid():
+            user_identifier = data.get("auth-user-id")
+            serializer.save(
+                created_by=user_identifier,
+                lastmodified_by=user_identifier
+            )
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    elif request.method == 'GET':
+        incidents = IncidentReport.objects.all()
+        start_date = request.GET.get('startDate')
+        end_date = request.GET.get('endDate')
+        if not start_date and not end_date:
+            from datetime import datetime, timedelta
+            thirty_days_ago = (datetime.now() - timedelta(days=30)).strftime('%Y-%m-%d')
+            incidents = incidents.filter(incidentDate__gte=thirty_days_ago)
+        else:
+            if start_date:
+                incidents = incidents.filter(incidentDate__gte=start_date)
+            if end_date:
+                incidents = incidents.filter(incidentDate__lte=end_date)
+        incidents = incidents.order_by('-incidentDate')
+        serializer = IncidentReportSerializer(incidents, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@csrf_exempt
+def get_next_incident_no(request):
+    from datetime import datetime
+    current_year = datetime.now().year
+    prefix = f"INC-{current_year}-"
+    
+    last_incident = IncidentReport.objects.filter(incidentNo__startswith=prefix).order_by('-incidentNo').first()
+    if last_incident and last_incident.incidentNo:
+        try:
+            last_num = int(last_incident.incidentNo.split('-')[-1])
+            next_num = last_num + 1
+        except (ValueError, IndexError):
+            next_num = 1
+    else:
+        next_num = 1
+        
+    incident_no = f"{prefix}{next_num:04d}"
+    return Response({"nextIncidentNo": incident_no}, status=status.HTTP_200_OK)
+
+
+def get_user_profile_role_and_details(user_identifier):
+    """
+    Queries the backend_diagnostics_profile collection in the Global database
+    and determines the user's role and details (name, department, etc.)
+    """
+    from django.conf import settings
+    import pymongo
+
+    try:
+        db_config = settings.DATABASES['default']
+        host = db_config.get('CLIENT', {}).get('host', 'mongodb://localhost:27017/')
+        client = pymongo.MongoClient(host)
+        db = client['Global']
+        profile = db['backend_diagnostics_profile'].find_one({'employeeId': str(user_identifier)})
+        if profile:
+            primary_role = profile.get('primaryRole') or ''
+            additional_roles = profile.get('additionalRoles') or []
+            
+            # Combine all roles
+            all_roles = [primary_role] + additional_roles
+            
+            # Determine role based on action / role codes:
+            # SI-R-IND -> Admin
+            # SI-R-INDIN -> In-Charge
+            # SI-R-INDE -> Employee
+            role = 'Employee'
+            if any('SI-R-IND' in r and 'SI-R-INDIN' not in r and 'SI-R-INDE' not in r for r in all_roles):
+                role = 'Admin'
+            elif any('SI-R-INDIN' in r for r in all_roles):
+                role = 'In-Charge'
+            elif any('SI-R-INDE' in r for r in all_roles):
+                role = 'Employee'
+            else:
+                # If not matched, fallback to checking if "Admin" or "In-Charge" is in the role names
+                if any('ADM' in r or 'Admin' in r for r in all_roles):
+                    role = 'Admin'
+                elif any('IND' in r or 'In-Charge' in r or 'Incharge' in r for r in all_roles):
+                    role = 'In-Charge'
+            
+            dept_code = profile.get('department') or ''
+            dept_name = dept_code
+            if dept_code:
+                try:
+                    dept_doc = db['backend_diagnostics_Departments'].find_one({'department_code': str(dept_code)})
+                    if dept_doc and dept_doc.get('department_name'):
+                        dept_name = dept_doc.get('department_name')
+                except Exception as e:
+                    print(f"Error querying department name: {e}")
+            
+            return {
+                'role': role,
+                'name': profile.get('employeeName') or '',
+                'department': dept_name,
+                'designation': profile.get('designation') or ''
+            }
+    except Exception as e:
+        print(f"Error querying profile: {e}")
+    
+    # Fallback to local Register model
+    try:
+        from .models import Register
+        user = Register.objects.get(id=str(user_identifier))
+        dept_code = user.department or ''
+        dept_name = dept_code
+        if dept_code:
+            try:
+                db_config = settings.DATABASES['default']
+                host = db_config.get('CLIENT', {}).get('host', 'mongodb://localhost:27017/')
+                client = pymongo.MongoClient(host)
+                db = client['Global']
+                dept_doc = db['backend_diagnostics_Departments'].find_one({'department_code': str(dept_code)})
+                if dept_doc and dept_doc.get('department_name'):
+                    dept_name = dept_doc.get('department_name')
+                    print(f"Department name: {dept_name}")
+            except Exception:
+                pass
+        return {
+            'role': user.role,
+            'name': user.name,
+            'department': dept_name,
+            'designation': ''
+        }
+    except Exception:
+        pass
+        
+    return {
+        'role': 'Employee',
+        'name': '',
+        'department': '',
+        'designation': ''
+    }
+
+
+@api_view(['POST', 'GET'])
+@csrf_exempt
+@permission_classes([HasRolePermission])
+def SupervisorInvestigationView(request):
+    if request.method == 'POST':
+        incident_id = request.data.get("incidentId")
+        existing = SupervisorInvestigation.objects.filter(incidentId=incident_id).first()
+        
+        user_identifier = request.data.get("auth-user-id")
+        profile_data = get_user_profile_role_and_details(user_identifier)
+        
+        # Determine user role from JWT token or fallback to profile database role
+        user_role = None
+        import jwt
+        auth_header = request.headers.get('Authorization') or request.META.get('HTTP_AUTHORIZATION') or ''
+        if auth_header:
+            token = auth_header.split(' ')[-1] if ' ' in auth_header else auth_header
+            try:
+                payload = jwt.decode(token, options={"verify_signature": False})
+                allowed_actions = payload.get('allowed-actions') or payload.get('allowedActions') or payload.get('allowed_actions') or []
+                if 'SI-R-IND' in allowed_actions:
+                    user_role = 'Admin'
+                elif 'SI-R-INDIN' in allowed_actions:
+                    user_role = 'In-Charge'
+                elif 'SI-R-INDE' in allowed_actions:
+                    user_role = 'Employee'
+            except Exception as e:
+                print(f"Error decoding JWT token for role: {e}")
+        
+        if not user_role:
+            user_role = profile_data.get('role', '')
+        
+        # Enforce role-based field restrictions
+        quality_fields = [
+            'qualityReceivedBy', 'qualityReceivedDeptDesignation', 'qualityReceivedDateTime', 
+            'qualityClassification', 'qualityRemarks', 'qualityVerifiedByHead', 'qualityVerifiedDateTime',
+            'qualityReceivedSignatureEmpId'
+        ]
+        incharge_fields = [
+            'why1', 'why2', 'why3', 'why4', 'why5',
+            'investigationName', 'investigationDeptDesignation', 'investigationSignatureEmpId', 'investigationDateTime',
+            'correctiveAction', 'correctiveName', 'correctiveDeptDesignation', 'correctiveSignatureEmpId', 'correctiveDateTime',
+            'preventiveAction', 'preventiveName', 'preventiveDeptDesignation', 'preventiveSignatureEmpId', 'preventiveDateTime',
+            'rcaImage'
+        ]
+        
+        # Make request.data mutable if it has _mutable attribute
+        if hasattr(request.data, '_mutable'):
+            request.data._mutable = True
+            
+        if user_role != 'Admin':
+            # Non-Admins cannot modify Quality Department fields
+            for field in quality_fields:
+                if field in request.data:
+                    request.data.pop(field)
+            if not existing:
+                request.data['qualityClassification'] = 'No harm'
+        else:
+            # Admins cannot modify In-Charge fields
+            for field in incharge_fields:
+                if field in request.data:
+                    request.data.pop(field)
+
+        if existing:
+            serializer = SupervisorInvestigationSerializer(existing, data=request.data, partial=True)
+        else:
+            serializer = SupervisorInvestigationSerializer(data=request.data)
+            
+        if serializer.is_valid():
+            user_identifier = request.data.get("auth-user-id")
+            
+            profile_data = get_user_profile_role_and_details(user_identifier)
+            u_name = profile_data['name']
+            u_dept = profile_data['department'] or ''
+
+            extra_kwargs = {}
+            if user_role == 'Admin':
+                extra_kwargs['qualityReceivedSignatureEmpId'] = request.data.get('qualityReceivedSignatureEmpId') or user_identifier
+            
+            if not existing:
+                from datetime import datetime
+                current_year = datetime.now().year
+                prefix = f"INV-{current_year}-"
+                last_inv = SupervisorInvestigation.objects.filter(id__startswith=prefix).order_by('-id').first()
+                if last_inv and last_inv.id:
+                    try:
+                        last_num = int(last_inv.id.split('-')[-1])
+                        next_num = last_num + 1
+                    except (ValueError, IndexError):
+                        next_num = 1
+                else:
+                    next_num = 1
+                new_id = f"{prefix}{next_num:04d}"
+                extra_kwargs['id'] = new_id
+
+            serializer.save(
+                created_by=user_identifier,
+                lastmodified_by=user_identifier,
+                investigationName=request.data.get('investigationName') or u_name,
+                investigationSignatureEmpId=request.data.get('investigationSignatureEmpId') or user_identifier,
+                investigationDeptDesignation=request.data.get('investigationDeptDesignation') or u_dept,
+                correctiveName=request.data.get('correctiveName') or u_name,
+                correctiveSignatureEmpId=request.data.get('correctiveSignatureEmpId') or user_identifier,
+                correctiveDeptDesignation=request.data.get('correctiveDeptDesignation') or u_dept,
+                preventiveName=request.data.get('preventiveName') or u_name,
+                preventiveSignatureEmpId=request.data.get('preventiveSignatureEmpId') or user_identifier,
+                preventiveDeptDesignation=request.data.get('preventiveDeptDesignation') or u_dept,
+                **extra_kwargs
+            )
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    elif request.method == 'GET':
+        start_date = request.GET.get('startDate')
+        end_date = request.GET.get('endDate')
+        
+        matching_incidents = IncidentReport.objects.all()
+        if not start_date and not end_date:
+            from datetime import datetime, timedelta
+            thirty_days_ago = (datetime.now() - timedelta(days=30)).strftime('%Y-%m-%d')
+            matching_incidents = matching_incidents.filter(incidentDate__gte=thirty_days_ago)
+        else:
+            if start_date:
+                matching_incidents = matching_incidents.filter(incidentDate__gte=start_date)
+            if end_date:
+                matching_incidents = matching_incidents.filter(incidentDate__lte=end_date)
+                
+        incident_ids = list(matching_incidents.values_list('incidentNo', flat=True))
+        
+        investigations = SupervisorInvestigation.objects.filter(incidentId__in=incident_ids)
+        serializer = SupervisorInvestigationSerializer(investigations, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(['POST', 'GET', 'DELETE'])
+@csrf_exempt
+@permission_classes([HasRolePermission])
+def IncidentClassificationView(request):
+    from .models import IncidentClassification
+    from .forms import IncidentClassificationSerializer
+    
+    DEFAULT_CLASSIFICATIONS = [
+        {
+            "category_key": "clinical",
+            "title": "Clinical Practice / Procedure",
+            "items": [
+                "Incomplete Documentation",
+                "Missing Documentation",
+                "Wrong Documentation",
+                "Missing files",
+                "Medical Records Unavailable",
+                "Confidentiality",
+                "Procedures not followed"
+            ]
+        },
+        {
+            "category_key": "safety",
+            "title": "Safety / Security",
+            "items": [
+                "Infant Abduction",
+                "Electric Shock",
+                "Theft",
+                "Structural Damage",
+                "Chemical Spillage",
+                "Mercury Spillage",
+                "Blood Body Fluid Spillage",
+                "Violent Behavior",
+                "Fire/Smoke Incident",
+                "Property Missing",
+                "Unauthorized entry",
+                "Patient Missing",
+                "Physical Assault",
+                "Protocol not followed"
+            ]
+        },
+        {
+            "category_key": "patient",
+            "title": "Patient Related",
+            "items": [
+                "Dissatisfaction",
+                "Thrombophlebitis",
+                "Bed sore",
+                "Hematoma",
+                "Fall",
+                "Diarrhoeal Dermatitis",
+                "Skin Peeling",
+                "Identification error"
+            ]
+        },
+        {
+            "category_key": "equipment",
+            "title": "Equipment / Supplies",
+            "items": [
+                "Improper Handling",
+                "Not available",
+                "Missing/Damaged",
+                "Failure/Malfunction",
+                "Wrong Equipment/Supply",
+                "Improper Storage"
+            ]
+        },
+        {
+            "category_key": "staff",
+            "title": "Staff / Employee",
+            "items": [
+                "Infection control related",
+                "Blood / Body fluid exposure",
+                "Needle Stick/Prick",
+                "Vehicular Accidents",
+                "Fall",
+                "Improper waste disposal"
+            ]
+        },
+        {
+            "category_key": "investigation",
+            "title": "Investigation",
+            "items": [
+                "Wrong Report",
+                "Wrong Sample",
+                "Missing Sample",
+                "Inadequate preservative",
+                "Sample Interchanged",
+                "Report Interchanged",
+                "Wrong Label",
+                "Incomplete Request Form"
+            ]
+        },
+        {
+            "category_key": "diet",
+            "title": "Diet Related",
+            "items": [
+                "Wrong Diet Indent",
+                "Wrong Diet",
+                "Missed Diet",
+                "Food Hygiene",
+                "Delayed Diet"
+            ]
+        },
+        {
+            "category_key": "medication",
+            "title": "Medication Related",
+            "items": [
+                "Administration Error",
+                "Prescription Error",
+                "Dispensing Error",
+                "Transcription Error",
+                "Verbal order policy not followed",
+                "Narcotic Policy not followed",
+                "Inappropriate Crash Cart Management",
+                "Expiry Policy not followed"
+            ]
+        }
+    ]
+
+    if request.method == 'POST':
+        class_id = request.data.get('id')
+        if class_id:
+            try:
+                instance = IncidentClassification.objects.get(id=str(class_id))
+                serializer = IncidentClassificationSerializer(instance, data=request.data, partial=True)
+            except IncidentClassification.DoesNotExist:
+                return Response({'error': 'Classification not found'}, status=status.HTTP_404_NOT_FOUND)
+        else:
+            # Generate next classification ID (e.g. CLF001)
+            import re
+            max_id = 0
+            for cls_obj in IncidentClassification.objects.all():
+                match = re.match(r'CLF(\d+)', str(cls_obj.id))
+                if match:
+                    val = int(match.group(1))
+                    if val > max_id:
+                        max_id = val
+            next_id = f"CLF{max_id + 1:03d}"
+            serializer = IncidentClassificationSerializer(data=request.data)
+            
+        if serializer.is_valid():
+            user_identifier = request.data.get("auth-user-id")
+            if not class_id:
+                serializer.save(
+                    id=next_id,
+                    created_by=user_identifier,
+                    lastmodified_by=user_identifier
+                )
+            else:
+                serializer.save(
+                    created_by=user_identifier,
+                    lastmodified_by=user_identifier
+                )
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+    elif request.method == 'GET':
+        classifications = IncidentClassification.objects.all()
+        if not classifications.exists():
+            for i, default_class in enumerate(DEFAULT_CLASSIFICATIONS, 1):
+                IncidentClassification.objects.create(
+                    id=f"CLF{i:03d}",
+                    category_key=default_class["category_key"],
+                    title=default_class["title"],
+                    items=default_class["items"]
+                )
+            classifications = IncidentClassification.objects.all()
+            
+        serializer = IncidentClassificationSerializer(classifications, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+        
+    elif request.method == 'DELETE':
+        class_id = request.GET.get('id') or request.data.get('id')
+        if not class_id:
+            return Response({'error': 'ID is required'}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            instance = IncidentClassification.objects.get(id=str(class_id))
+            instance.delete()
+            return Response({'message': 'Classification deleted successfully'}, status=status.HTTP_200_OK)
+        except IncidentClassification.DoesNotExist:
+            return Response({'error': 'Classification not found'}, status=status.HTTP_404_NOT_FOUND)
+
+
+from django.db.models import Q
+@api_view(['GET'])
+@permission_classes([HasRolePermission])
+def get_incharges(request):
+    from django.conf import settings
+    import pymongo
+    
+    try:
+        db_config = settings.DATABASES['default']
+        host = db_config.get('CLIENT', {}).get('host', 'mongodb://localhost:27017/')
+        client = pymongo.MongoClient(host)
+        db = client['Global']
+        
+        query = {
+            '$or': [
+                {'primaryRole': {'$regex': 'SI-R-INDIN|In-Charge|Incharge|IND', '$options': 'i'}},
+                {'additionalRoles': {'$regex': 'SI-R-INDIN|In-Charge|Incharge|IND', '$options': 'i'}}
+            ]
+        }
+        profiles = db['backend_diagnostics_profile'].find(query)
+        data = []
+        for p in profiles:
+            data.append({
+                'id': p.get('employeeId'),
+                'name': p.get('employeeName') or '',
+                'department': p.get('department') or ''
+            })
+        if data:
+            return Response(data, status=status.HTTP_200_OK)
+    except Exception as e:
+        print(f"Error querying in-charges from Global DB: {e}")
+        
+    # Fallback to local Register model
+    from .models import Register
+    incharges = Register.objects.filter(Q(role__icontains="In-Charge") | Q(role__icontains="Incharge"))
+    data = [{'id': u.id, 'name': u.name, 'department': u.department} for u in incharges]
+    return Response(data, status=status.HTTP_200_OK)
