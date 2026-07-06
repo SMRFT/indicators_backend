@@ -54,7 +54,7 @@ PAGE_MAPPING={
     '/_b_a_c_k_e_n_d/Indicators/OPDRawData/': 'SHI-P-F1R',
     '/_b_a_c_k_e_n_d/Indicators/IncidentReport/': 'SHI-P-INC',
     r'^/_b_a_c_k_e_n_d/Indicators/IncidentReport/?(\?.*)?$': 'SHI-P-INC',
-    '/_b_a_c_k_e_n_d/Indicators/SupervisorInvestigation/': 'SHI-P-SUPINV',
+    
     r'^/_b_a_c_k_e_n_d/Indicators/SupervisorInvestigation/?(\?.*)?$': 'SHI-P-SUPINV',
     
     '/_b_a_c_k_e_n_d/Indicators/IncidentClassification/': 'SHI-P-INCC',
