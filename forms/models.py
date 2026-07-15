@@ -2,6 +2,22 @@
 from django.db import models
 from djongo import models as djongo_models
 
+class SafeJSONField(models.JSONField):
+    def from_db_value(self, value, expression, connection):
+        if value is None:
+            return value
+        if isinstance(value, (dict, list)):
+            return value
+        try:
+            if isinstance(value, str):
+                import json
+                return json.loads(value, cls=self.decoder)
+        except Exception:
+            return value
+        return super().from_db_value(value, expression, connection)
+
+models.JSONField = SafeJSONField
+
 
 
 class AuditModel(models.Model):
@@ -1218,6 +1234,31 @@ class IncidentReport(AuditModel):
             self.incidentNo = f"{prefix}{next_num:04d}"
             
         super().save(*args, **kwargs)
+        
+        try:
+            def parse_json_value(v):
+                if isinstance(v, str):
+                    v_s = v.strip()
+                    if (v_s.startswith('{') and v_s.endswith('}')) or (v_s.startswith('[') and v_s.endswith(']')):
+                        import json
+                        try: return json.loads(v_s)
+                        except: pass
+                return v
+            
+            from django.conf import settings
+            import pymongo
+            db_config = settings.DATABASES['default']
+            host = db_config.get('CLIENT', {}).get('host', 'mongodb://localhost:27017/')
+            db_name = db_config.get('NAME', 'Indicators')
+            client = pymongo.MongoClient(host)
+            db = client[db_name]
+            
+            db['forms_incidentreport'].update_one(
+                {'$or': [{'incidentNo': self.incidentNo}, {'_id': self.incidentNo}]},
+                {'$set': {'classifications': parse_json_value(self.classifications)}}
+            )
+        except Exception as e:
+            print(f"Error during write-back for IncidentReport: {e}")
 
     def __str__(self):
         return f"IncidentReport {self.pk} on {self.incidentDate}"
@@ -1272,6 +1313,39 @@ class IncidentClassification(AuditModel):
     items = models.JSONField(default=list, blank=True)
     incharge_id = models.CharField(max_length=100, blank=True, null=True)
     incharge_name = models.CharField(max_length=200, blank=True, null=True)
+    # Per-item in-charge assignments: { "Item Text": { "incharge_id": "...", "incharge_name": "..." }, ... }
+    item_incharges = models.JSONField(default=dict, blank=True)
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        
+        try:
+            def parse_json_value(v):
+                if isinstance(v, str):
+                    v_s = v.strip()
+                    if (v_s.startswith('{') and v_s.endswith('}')) or (v_s.startswith('[') and v_s.endswith(']')):
+                        import json
+                        try: return json.loads(v_s)
+                        except: pass
+                return v
+            
+            from django.conf import settings
+            import pymongo
+            db_config = settings.DATABASES['default']
+            host = db_config.get('CLIENT', {}).get('host', 'mongodb://localhost:27017/')
+            db_name = db_config.get('NAME', 'Indicators')
+            client = pymongo.MongoClient(host)
+            db = client[db_name]
+            
+            db['forms_incidentclassification'].update_one(
+                {'$or': [{'id': self.id}, {'_id': self.id}]},
+                {'$set': {
+                    'items': parse_json_value(self.items),
+                    'item_incharges': parse_json_value(self.item_incharges)
+                }}
+            )
+        except Exception as e:
+            print(f"Error during write-back for IncidentClassification: {e}")
 
     def __str__(self):
         return self.title

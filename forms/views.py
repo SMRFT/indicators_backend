@@ -1759,7 +1759,7 @@ def create_mockdrill(request):
     return Response(serializer.errors, status=400)
 
 
-from .models import IncidentReport, SupervisorInvestigation
+from .models import IncidentReport, SupervisorInvestigation, IncidentClassification
 from .forms import IncidentReportSerializer, SupervisorInvestigationSerializer
 
 @api_view(['POST', 'GET'])
@@ -1979,18 +1979,74 @@ def SupervisorInvestigationView(request):
         if hasattr(request.data, '_mutable'):
             request.data._mutable = True
             
-        if user_role != 'Admin':
-            # Non-Admins cannot modify Quality Department fields
+        # Check if the user is the assigned in-charge for any of this incident's classification items
+        is_assigned = False
+        import json
+        incident = IncidentReport.objects.filter(incidentNo=incident_id).first()
+        if incident:
+            classifications = incident.classifications
+            parsed_class = {}
+            if classifications:
+                if isinstance(classifications, str):
+                    try:
+                        parsed_class = json.loads(classifications)
+                    except Exception:
+                        parsed_class = {}
+                elif isinstance(classifications, dict):
+                    parsed_class = classifications
+            
+            for cat_title, items in parsed_class.items():
+                if not isinstance(items, list) or len(items) == 0:
+                    continue
+                matched_class = IncidentClassification.objects.filter(category_key=cat_title).first()
+                if not matched_class:
+                    matched_class = IncidentClassification.objects.filter(title=cat_title).first()
+                
+                if matched_class:
+                    item_incharges = matched_class.item_incharges or {}
+                    for item in items:
+                        item_assigned = item_incharges.get(item) or {}
+                        if item_assigned.get('incharge_id'):
+                            if str(item_assigned.get('incharge_id')) == str(user_identifier):
+                                is_assigned = True
+                                break
+                        else:
+                            if matched_class.incharge_id and str(matched_class.incharge_id) == str(user_identifier):
+                                is_assigned = True
+                                break
+                    if is_assigned:
+                        break
+
+        if user_role == 'Admin':
+            # Admins can edit Quality fields always, but can edit RCA fields only if assigned
+            if not is_assigned:
+                for field in incharge_fields:
+                    if field in request.data:
+                        request.data.pop(field)
+            if not existing:
+                request.data.setdefault('qualityClassification', 'No harm')
+        elif user_role == 'In-Charge':
+            # In-Charge cannot modify Quality Department fields
             for field in quality_fields:
+                if field in request.data:
+                    request.data.pop(field)
+            # In-Charge can edit RCA fields only if assigned
+            if not is_assigned:
+                for field in incharge_fields:
+                    if field in request.data:
+                        request.data.pop(field)
+            if not existing:
+                request.data['qualityClassification'] = 'No harm'
+        else:
+            # Other roles cannot modify Quality fields or RCA fields
+            for field in quality_fields:
+                if field in request.data:
+                    request.data.pop(field)
+            for field in incharge_fields:
                 if field in request.data:
                     request.data.pop(field)
             if not existing:
                 request.data['qualityClassification'] = 'No harm'
-        else:
-            # Admins cannot modify In-Charge fields
-            for field in incharge_fields:
-                if field in request.data:
-                    request.data.pop(field)
 
         if existing:
             serializer = SupervisorInvestigationSerializer(existing, data=request.data, partial=True)
@@ -2184,9 +2240,35 @@ def IncidentClassificationView(request):
 
     if request.method == 'POST':
         class_id = request.data.get('id')
+        
+        # Handle per-item incharge allocation separately (direct field update)
+        item_incharges = request.data.get('item_incharges')
+        
         if class_id:
             try:
                 instance = IncidentClassification.objects.get(id=str(class_id))
+                
+                # If only updating item_incharges (and optionally incharge_id/name), do direct field update
+                if item_incharges is not None:
+                    if isinstance(item_incharges, str):
+                        import json
+                        try:
+                            item_incharges = json.loads(item_incharges)
+                        except Exception:
+                            item_incharges = {}
+                    instance.item_incharges = item_incharges
+                    # Also update top-level incharge if provided
+                    incharge_id = request.data.get('incharge_id')
+                    incharge_name = request.data.get('incharge_name')
+                    if incharge_id is not None:
+                        instance.incharge_id = incharge_id
+                    if incharge_name is not None:
+                        instance.incharge_name = incharge_name
+                    instance.lastmodified_by = request.data.get("auth-user-id")
+                    instance.save()
+                    serializer = IncidentClassificationSerializer(instance)
+                    return Response(serializer.data, status=status.HTTP_201_CREATED)
+                
                 serializer = IncidentClassificationSerializer(instance, data=request.data, partial=True)
             except IncidentClassification.DoesNotExist:
                 return Response({'error': 'Classification not found'}, status=status.HTTP_404_NOT_FOUND)
@@ -2261,8 +2343,8 @@ def get_incharges(request):
         
         query = {
             '$or': [
-                {'primaryRole': {'$regex': 'SI-R-INDIN|In-Charge|Incharge|IND', '$options': 'i'}},
-                {'additionalRoles': {'$regex': 'SI-R-INDIN|In-Charge|Incharge|IND', '$options': 'i'}}
+                {'primaryRole': {'$regex': 'SI-R-INDIN|In-Charge|Incharge|IND|Admin|SI-R-IND', '$options': 'i'}},
+                {'additionalRoles': {'$regex': 'SI-R-INDIN|In-Charge|Incharge|IND|Admin|SI-R-IND', '$options': 'i'}}
             ]
         }
         profiles = db['backend_diagnostics_profile'].find(query)
@@ -2280,6 +2362,8 @@ def get_incharges(request):
         
     # Fallback to local Register model
     from .models import Register
-    incharges = Register.objects.filter(Q(role__icontains="In-Charge") | Q(role__icontains="Incharge"))
+    incharges = Register.objects.filter(
+        Q(role__icontains="In-Charge") | Q(role__icontains="Incharge") | Q(role__icontains="Admin")
+    )
     data = [{'id': u.id, 'name': u.name, 'department': u.department} for u in incharges]
     return Response(data, status=status.HTTP_200_OK)

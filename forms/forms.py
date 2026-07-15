@@ -320,6 +320,17 @@ class MockDrillSerializer(serializers.ModelSerializer):
 
 from .models import IncidentReport, SupervisorInvestigation
 
+def parse_json_value(val):
+    if isinstance(val, str):
+        val_stripped = val.strip()
+        if (val_stripped.startswith('{') and val_stripped.endswith('}')) or (val_stripped.startswith('[') and val_stripped.endswith(']')):
+            import json
+            try:
+                return json.loads(val_stripped)
+            except Exception:
+                pass
+    return val
+
 class IncidentReportSerializer(serializers.ModelSerializer):
     id = serializers.SerializerMethodField()
 
@@ -330,6 +341,18 @@ class IncidentReportSerializer(serializers.ModelSerializer):
     def get_id(self, obj):
         val = obj.pk or getattr(obj, 'id', None) or getattr(obj, '_id', None)
         return str(val) if val else None
+
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        for key, val in ret.items():
+            ret[key] = parse_json_value(val)
+        return ret
+
+    def to_internal_value(self, data):
+        data_copy = data.copy() if hasattr(data, 'copy') else dict(data)
+        for key, val in list(data_copy.items()):
+            data_copy[key] = parse_json_value(val)
+        return super().to_internal_value(data_copy)
 
 
 class SupervisorInvestigationSerializer(serializers.ModelSerializer):
@@ -371,6 +394,18 @@ class SupervisorInvestigationSerializer(serializers.ModelSerializer):
 
         return incident_id
 
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        for key, val in ret.items():
+            ret[key] = parse_json_value(val)
+        return ret
+
+    def to_internal_value(self, data):
+        data_copy = data.copy() if hasattr(data, 'copy') else dict(data)
+        for key, val in list(data_copy.items()):
+            data_copy[key] = parse_json_value(val)
+        return super().to_internal_value(data_copy)
+
 
 from .models import IncidentClassification
 
@@ -378,3 +413,15 @@ class IncidentClassificationSerializer(serializers.ModelSerializer):
     class Meta:
         model = IncidentClassification
         fields = '__all__'
+
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        for key, val in ret.items():
+            ret[key] = parse_json_value(val)
+        return ret
+
+    def to_internal_value(self, data):
+        data_copy = data.copy() if hasattr(data, 'copy') else dict(data)
+        for key, val in list(data_copy.items()):
+            data_copy[key] = parse_json_value(val)
+        return super().to_internal_value(data_copy)
