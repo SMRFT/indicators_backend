@@ -8,6 +8,38 @@ from datetime import datetime,timedelta
 import json
 from pyauth.auth import HasRolePermission
 
+def handle_ward_data_submission(request, model_class, serializer_class):
+    if request.method == 'POST':
+        selected_date = request.data.get('selectedDate')
+        
+        # Check if data for the selected date already exists
+        if model_class.objects.filter(selectedDate=selected_date).exists():
+            return Response({'error': 'Data already exists for this date.'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # If no existing data, proceed with saving
+        serializer = serializer_class(data=request.data)
+        if serializer.is_valid():
+            # Create object but don't save yet
+            obj = serializer.save(commit=False)
+
+            # Get user id from request
+            user_identifier = request.data.get("auth-user-id")
+
+            # Set fields manually
+            try:
+                if hasattr(obj, 'created_by') and not obj.created_by:
+                    obj.created_by = user_identifier
+                if hasattr(obj, 'lastmodified_by'):
+                    obj.lastmodified_by = user_identifier
+            except AttributeError:
+                pass
+
+            # Save the model
+            obj.save()
+
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 from .forms import RegisterSerializer
 @api_view(['POST'])
@@ -58,35 +90,7 @@ from .forms import FrontOfficeSerializer
 @api_view(['POST'])
 @permission_classes([ HasRolePermission])
 def frontoffice_data(request):
-    if request.method == 'POST':
-        selected_date = request.data.get('selectedDate')
-        
-        # Check if data for the selected date already exists
-        if FrontOffice.objects.filter(selectedDate=selected_date).exists():
-            return Response({'error': 'Data already exists for this date.'}, status=status.HTTP_400_BAD_REQUEST)
-        
-        # If no existing data, proceed with saving
-        serializer = FrontOfficeSerializer(data=request.data)
-        if serializer.is_valid():
-            # Create object but don't save yet
-            obj = serializer.save(commit=False)
-
-            # Get user id from request
-            user_identifier = request.data.get("auth-user-id")
-
-            # Set fields manually (ModelForm cannot receive extra args)
-            if not obj.created_by:
-                obj.created_by = user_identifier
-
-            obj.lastmodified_by = user_identifier
-
-            # Save the model
-            obj.save()
-
-            # serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    return handle_ward_data_submission(request, FrontOffice, FrontOfficeSerializer)
 
 
 from .forms import FirstFloorSerializer
@@ -94,35 +98,7 @@ from .forms import FirstFloorSerializer
 @csrf_exempt
 @permission_classes([ HasRolePermission])
 def firstfloor_data(request):
-    if request.method == 'POST':
-        selected_date = request.data.get('selectedDate')
-        
-        # Check if data for the selected date already exists
-        if FirstFloor.objects.filter(selectedDate=selected_date).exists():
-            return Response({'error': 'Data already exists for this date.'}, status=status.HTTP_400_BAD_REQUEST)
-        
-        # If no existing data, proceed with saving
-        serializer = FirstFloorSerializer(data=request.data)
-        if serializer.is_valid():
-            # Create object but don't save yet
-            obj = serializer.save(commit=False)
-
-            # Get user id from request
-            user_identifier = request.data.get("auth-user-id")
-
-            # Set fields manually (ModelForm cannot receive extra args)
-            if not obj.created_by:
-                obj.created_by = user_identifier
-
-            obj.lastmodified_by = user_identifier
-
-            # Save the model
-            obj.save()
-
-            # serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    return handle_ward_data_submission(request, FirstFloor, FirstFloorSerializer)
     
 
 from .forms import SecondFloorSerializer
@@ -130,35 +106,7 @@ from .forms import SecondFloorSerializer
 @csrf_exempt
 @permission_classes([ HasRolePermission])
 def secondfloor_data(request):
-    if request.method == 'POST':
-        selected_date = request.data.get('selectedDate')
-        
-        # Check if data for the selected date already exists
-        if SecondFloor.objects.filter(selectedDate=selected_date).exists():
-            return Response({'error': 'Data already exists for this date.'}, status=status.HTTP_400_BAD_REQUEST)
-        
-        # If no existing data, proceed with saving
-        serializer = SecondFloorSerializer(data=request.data)
-        if serializer.is_valid():
-            # Create object but don't save yet
-            obj = serializer.save(commit=False)
-
-            # Get user id from request
-            user_identifier = request.data.get("auth-user-id")
-
-            # Set fields manually (ModelForm cannot receive extra args)
-            if not obj.created_by:
-                obj.created_by = user_identifier
-
-            obj.lastmodified_by = user_identifier
-
-            # Save the model
-            obj.save()
-
-            # serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    return handle_ward_data_submission(request, SecondFloor, SecondFloorSerializer)
     
 
 from .forms import ThirdFloorSerializer
@@ -166,35 +114,7 @@ from .forms import ThirdFloorSerializer
 @csrf_exempt
 @permission_classes([ HasRolePermission])
 def thirdfloor_data(request):
-    if request.method == 'POST':
-        selected_date = request.data.get('selectedDate')
-        
-        # Check if data for the selected date already exists
-        if ThirdFloor.objects.filter(selectedDate=selected_date).exists():
-            return Response({'error': 'Data already exists for this date.'}, status=status.HTTP_400_BAD_REQUEST)
-        
-        # If no existing data, proceed with saving
-        serializer = ThirdFloorSerializer(data=request.data)
-        if serializer.is_valid():
-            # Create object but don't save yet
-            obj = serializer.save(commit=False)
-
-            # Get user id from request
-            user_identifier = request.data.get("auth-user-id")
-
-            # Set fields manually (ModelForm cannot receive extra args)
-            if not obj.created_by:
-                obj.created_by = user_identifier
-
-            obj.lastmodified_by = user_identifier
-
-            # Save the model
-            obj.save()
-
-            # serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    return handle_ward_data_submission(request, ThirdFloor, ThirdFloorSerializer)
 
 
 from .forms import FirstSuitSerializer
@@ -202,35 +122,7 @@ from .forms import FirstSuitSerializer
 @csrf_exempt
 @permission_classes([ HasRolePermission])
 def firstsuit_data(request):
-    if request.method == 'POST':
-        selected_date = request.data.get('selectedDate')
-        
-        # Check if data for the selected date already exists
-        if FirstSuit.objects.filter(selectedDate=selected_date).exists():
-            return Response({'error': 'Data already exists for this date.'}, status=status.HTTP_400_BAD_REQUEST)
-        
-        # If no existing data, proceed with saving
-        serializer = FirstSuitSerializer(data=request.data)
-        if serializer.is_valid():
-            # Create object but don't save yet
-            obj = serializer.save(commit=False)
-
-            # Get user id from request
-            user_identifier = request.data.get("auth-user-id")
-
-            # Set fields manually (ModelForm cannot receive extra args)
-            if not obj.created_by:
-                obj.created_by = user_identifier
-
-            obj.lastmodified_by = user_identifier
-
-            # Save the model
-            obj.save()
-
-            # serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    return handle_ward_data_submission(request, FirstSuit, FirstSuitSerializer)
     
 
 from .forms import SecondSuitSerializer
@@ -238,35 +130,7 @@ from .forms import SecondSuitSerializer
 @csrf_exempt
 @permission_classes([ HasRolePermission])
 def secondsuit_data(request):
-    if request.method == 'POST':
-        selected_date = request.data.get('selectedDate')
-        
-        # Check if data for the selected date already exists
-        if SecondSuit.objects.filter(selectedDate=selected_date).exists():
-            return Response({'error': 'Data already exists for this date.'}, status=status.HTTP_400_BAD_REQUEST)
-        
-        # If no existing data, proceed with saving
-        serializer = SecondSuitSerializer(data=request.data)
-        if serializer.is_valid():
-            # Create object but don't save yet
-            obj = serializer.save(commit=False)
-
-            # Get user id from request
-            user_identifier = request.data.get("auth-user-id")
-
-            # Set fields manually (ModelForm cannot receive extra args)
-            if not obj.created_by:
-                obj.created_by = user_identifier
-
-            obj.lastmodified_by = user_identifier
-
-            # Save the model
-            obj.save()
-
-            # serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    return handle_ward_data_submission(request, SecondSuit, SecondSuitSerializer)
     
 
 from .forms import LabSerializer
@@ -274,35 +138,7 @@ from .forms import LabSerializer
 @csrf_exempt
 @permission_classes([ HasRolePermission])
 def lab_data(request):
-    if request.method == 'POST':
-        selected_date = request.data.get('selectedDate')
-        
-        # Check if data for the selected date already exists
-        if Lab.objects.filter(selectedDate=selected_date).exists():
-            return Response({'error': 'Data already exists for this date.'}, status=status.HTTP_400_BAD_REQUEST)
-        
-        # If no existing data, proceed with saving
-        serializer = LabSerializer(data=request.data)
-        if serializer.is_valid():
-            # Create object but don't save yet
-            obj = serializer.save(commit=False)
-
-            # Get user id from request
-            user_identifier = request.data.get("auth-user-id")
-
-            # Set fields manually (ModelForm cannot receive extra args)
-            if not obj.created_by:
-                obj.created_by = user_identifier
-
-            obj.lastmodified_by = user_identifier
-
-            # Save the model
-            obj.save()
-
-            # serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    return handle_ward_data_submission(request, Lab, LabSerializer)
     
 
 from .forms import CTSerializer
@@ -310,35 +146,7 @@ from .forms import CTSerializer
 @csrf_exempt
 @permission_classes([ HasRolePermission])
 def CT_data(request):
-    if request.method == 'POST':
-        selected_date = request.data.get('selectedDate')
-        
-        # Check if data for the selected date already exists
-        if CT.objects.filter(selectedDate=selected_date).exists():
-            return Response({'error': 'Data already exists for this date.'}, status=status.HTTP_400_BAD_REQUEST)
-        
-        # If no existing data, proceed with saving
-        serializer = CTSerializer(data=request.data)
-        if serializer.is_valid():
-            # Create object but don't save yet
-            obj = serializer.save(commit=False)
-
-            # Get user id from request
-            user_identifier = request.data.get("auth-user-id")
-
-            # Set fields manually (ModelForm cannot receive extra args)
-            if not obj.created_by:
-                obj.created_by = user_identifier
-
-            obj.lastmodified_by = user_identifier
-
-            # Save the model
-            obj.save()
-
-            # serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    return handle_ward_data_submission(request, CT, CTSerializer)
     
 
 from .forms import MRISerializer
@@ -346,35 +154,7 @@ from .forms import MRISerializer
 @csrf_exempt
 @permission_classes([ HasRolePermission])
 def MRI_data(request):
-    if request.method == 'POST':
-        selected_date = request.data.get('selectedDate')
-        
-        # Check if data for the selected date already exists
-        if MRI.objects.filter(selectedDate=selected_date).exists():
-            return Response({'error': 'Data already exists for this date.'}, status=status.HTTP_400_BAD_REQUEST)
-        
-        # If no existing data, proceed with saving
-        serializer = MRISerializer(data=request.data)
-        if serializer.is_valid():
-            # Create object but don't save yet
-            obj = serializer.save(commit=False)
-
-            # Get user id from request
-            user_identifier = request.data.get("auth-user-id")
-
-            # Set fields manually (ModelForm cannot receive extra args)
-            if not obj.created_by:
-                obj.created_by = user_identifier
-
-            obj.lastmodified_by = user_identifier
-
-            # Save the model
-            obj.save()
-
-            # serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    return handle_ward_data_submission(request, MRI, MRISerializer)
     
 
 from .forms import XraySerializer
@@ -382,35 +162,7 @@ from .forms import XraySerializer
 @csrf_exempt
 @permission_classes([ HasRolePermission])
 def Xray_data(request):
-    if request.method == 'POST':
-        selected_date = request.data.get('selectedDate')
-        
-        # Check if data for the selected date already exists
-        if Xray.objects.filter(selectedDate=selected_date).exists():
-            return Response({'error': 'Data already exists for this date.'}, status=status.HTTP_400_BAD_REQUEST)
-        
-        # If no existing data, proceed with saving
-        serializer = XraySerializer(data=request.data)
-        if serializer.is_valid():
-            # Create object but don't save yet
-            obj = serializer.save(commit=False)
-
-            # Get user id from request
-            user_identifier = request.data.get("auth-user-id")
-
-            # Set fields manually (ModelForm cannot receive extra args)
-            if not obj.created_by:
-                obj.created_by = user_identifier
-
-            obj.lastmodified_by = user_identifier
-
-            # Save the model
-            obj.save()
-
-            # serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    return handle_ward_data_submission(request, Xray, XraySerializer)
     
 
 from .forms import OPDSerializer
@@ -418,35 +170,7 @@ from .forms import OPDSerializer
 @csrf_exempt
 @permission_classes([ HasRolePermission])
 def OPD_data(request):
-    if request.method == 'POST':
-        selected_date = request.data.get('selectedDate')
-        
-        # Check if data for the selected date already exists
-        if OPD.objects.filter(selectedDate=selected_date).exists():
-            return Response({'error': 'Data already exists for this date.'}, status=status.HTTP_400_BAD_REQUEST)
-        
-        # If no existing data, proceed with saving
-        serializer = OPDSerializer(data=request.data)
-        if serializer.is_valid():
-            # Create object but don't save yet
-            obj = serializer.save(commit=False)
-
-            # Get user id from request
-            user_identifier = request.data.get("auth-user-id")
-
-            # Set fields manually (ModelForm cannot receive extra args)
-            if not obj.created_by:
-                obj.created_by = user_identifier
-
-            obj.lastmodified_by = user_identifier
-
-            # Save the model
-            obj.save()
-
-            # serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    return handle_ward_data_submission(request, OPD, OPDSerializer)
     
 
 from .forms import OTSerializer
@@ -454,35 +178,7 @@ from .forms import OTSerializer
 @csrf_exempt
 @permission_classes([ HasRolePermission])
 def OT_data(request):
-    if request.method == 'POST':
-        selected_date = request.data.get('selectedDate')
-        
-        # Check if data for the selected date already exists
-        if OT.objects.filter(selectedDate=selected_date).exists():
-            return Response({'error': 'Data already exists for this date.'}, status=status.HTTP_400_BAD_REQUEST)
-        
-        # If no existing data, proceed with saving
-        serializer = OTSerializer(data=request.data)
-        if serializer.is_valid():
-            # Create object but don't save yet
-            obj = serializer.save(commit=False)
-
-            # Get user id from request
-            user_identifier = request.data.get("auth-user-id")
-
-            # Set fields manually (ModelForm cannot receive extra args)
-            if not obj.created_by:
-                obj.created_by = user_identifier
-
-            obj.lastmodified_by = user_identifier
-
-            # Save the model
-            obj.save()
-
-            # serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    return handle_ward_data_submission(request, OT, OTSerializer)
     
 
 from .forms import HRSerializer
@@ -490,36 +186,7 @@ from .forms import HRSerializer
 @csrf_exempt
 @permission_classes([ HasRolePermission])
 def HR_data(request):
-    if request.method == 'POST':
-        selected_date = request.data.get('selectedDate')
-        
-        # Check if data for the selected date already exists
-        if HR.objects.filter(selectedDate=selected_date).exists():
-            return Response({'error': 'Data already exists for this date.'}, status=status.HTTP_400_BAD_REQUEST)
-        
-        # If no existing data, proceed with saving
-        serializer = HRSerializer(data=request.data)
-        if serializer.is_valid():
-            
-            # Create object but don't save yet
-            obj = serializer.save(commit=False)
-
-            # Get user id from request
-            user_identifier = request.data.get("auth-user-id")
-
-            # Set fields manually (ModelForm cannot receive extra args)
-            if not obj.created_by:
-                obj.created_by = user_identifier
-
-            obj.lastmodified_by = user_identifier
-
-            # Save the model
-            obj.save()
-
-            # serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    return handle_ward_data_submission(request, HR, HRSerializer)
     
 
 from .forms import PhysiotherapySerializer
@@ -527,35 +194,7 @@ from .forms import PhysiotherapySerializer
 @csrf_exempt
 @permission_classes([ HasRolePermission])
 def physiotherapy_data(request):
-    if request.method == 'POST':
-        selected_date = request.data.get('selectedDate')
-        
-        # Check if data for the selected date already exists
-        if Physiotherapy.objects.filter(selectedDate=selected_date).exists():
-            return Response({'error': 'Data already exists for this date.'}, status=status.HTTP_400_BAD_REQUEST)
-        
-        # If no existing data, proceed with saving
-        serializer = PhysiotherapySerializer(data=request.data)
-        if serializer.is_valid():
-            # Create object but don't save yet
-            obj = serializer.save(commit=False)
-
-            # Get user id from request
-            user_identifier = request.data.get("auth-user-id")
-
-            # Set fields manually (ModelForm cannot receive extra args)
-            if not obj.created_by:
-                obj.created_by = user_identifier
-
-            obj.lastmodified_by = user_identifier
-
-            # Save the model
-            obj.save()
-
-            # serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    return handle_ward_data_submission(request, Physiotherapy, PhysiotherapySerializer)
     
 
 from .forms import DialysisSerializer
@@ -563,35 +202,7 @@ from .forms import DialysisSerializer
 @csrf_exempt
 @permission_classes([ HasRolePermission])
 def dialysis_data(request):
-    if request.method == 'POST':
-        selected_date = request.data.get('selectedDate')
-        
-        # Check if data for the selected date already exists
-        if Dialysis.objects.filter(selectedDate=selected_date).exists():
-            return Response({'error': 'Data already exists for this date.'}, status=status.HTTP_400_BAD_REQUEST)
-        
-        # If no existing data, proceed with saving
-        serializer = DialysisSerializer(data=request.data)
-        if serializer.is_valid():
-            # Create object but don't save yet
-            obj = serializer.save(commit=False)
-
-            # Get user id from request
-            user_identifier = request.data.get("auth-user-id")
-
-            # Set fields manually (ModelForm cannot receive extra args)
-            if not obj.created_by:
-                obj.created_by = user_identifier
-
-            obj.lastmodified_by = user_identifier
-
-            # Save the model
-            obj.save()
-
-            # serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    return handle_ward_data_submission(request, Dialysis, DialysisSerializer)
     
  
 from .forms import EmergencyRoomSerializer
@@ -599,35 +210,7 @@ from .forms import EmergencyRoomSerializer
 @csrf_exempt
 @permission_classes([ HasRolePermission])
 def emergency_room_data(request):
-    if request.method == 'POST':
-        selected_date = request.data.get('selectedDate')
-        
-        # Check if data for the selected date already exists
-        if EmergencyRoom.objects.filter(selectedDate=selected_date).exists():
-            return Response({'error': 'Data already exists for this date.'}, status=status.HTTP_400_BAD_REQUEST)
-        
-        # If no existing data, proceed with saving
-        serializer = EmergencyRoomSerializer(data=request.data)
-        if serializer.is_valid():
-            # Create object but don't save yet
-            obj = serializer.save(commit=False)
-
-            # Get user id from request
-            user_identifier = request.data.get("auth-user-id")
-
-            # Set fields manually (ModelForm cannot receive extra args)
-            if not obj.created_by:
-                obj.created_by = user_identifier
-
-            obj.lastmodified_by = user_identifier
-
-            # Save the model
-            obj.save()
-
-            # serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    return handle_ward_data_submission(request, EmergencyRoom, EmergencyRoomSerializer)
 
 
 from .forms import MRDSerializer
@@ -635,35 +218,7 @@ from .forms import MRDSerializer
 @csrf_exempt
 @permission_classes([ HasRolePermission])
 def MRD_data(request):
-    if request.method == 'POST':
-        selected_date = request.data.get('selectedDate')
-        
-        # Check if data for the selected date already exists
-        if MRD.objects.filter(selectedDate=selected_date).exists():
-            return Response({'error': 'Data already exists for this date.'}, status=status.HTTP_400_BAD_REQUEST)
-        
-        # If no existing data, proceed with saving
-        serializer = MRDSerializer(data=request.data)
-        if serializer.is_valid():
-            # Create object but don't save yet
-            obj = serializer.save(commit=False)
-
-            # Get user id from request
-            user_identifier = request.data.get("auth-user-id")
-
-            # Set fields manually (ModelForm cannot receive extra args)
-            if not obj.created_by:
-                obj.created_by = user_identifier
-
-            obj.lastmodified_by = user_identifier
-
-            # Save the model
-            obj.save()
-
-            # serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    return handle_ward_data_submission(request, MRD, MRDSerializer)
     
     
 from .forms import ChemoWardSerializer
@@ -671,35 +226,7 @@ from .forms import ChemoWardSerializer
 @csrf_exempt
 @permission_classes([ HasRolePermission])
 def chemo_ward_data(request):
-    if request.method == 'POST':
-        selected_date = request.data.get('selectedDate')
-        
-        # Check if data for the selected date already exists
-        if ChemoWard.objects.filter(selectedDate=selected_date).exists():
-            return Response({'error': 'Data already exists for this date.'}, status=status.HTTP_400_BAD_REQUEST)
-        
-        # If no existing data, proceed with saving
-        serializer = ChemoWardSerializer(data=request.data)
-        if serializer.is_valid():
-            # Create object but don't save yet
-            obj = serializer.save(commit=False)
-
-            # Get user id from request
-            user_identifier = request.data.get("auth-user-id")
-
-            # Set fields manually (ModelForm cannot receive extra args)
-            if not obj.created_by:
-                obj.created_by = user_identifier
-
-            obj.lastmodified_by = user_identifier
-
-            # Save the model
-            obj.save()
-
-            # serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    return handle_ward_data_submission(request, ChemoWard, ChemoWardSerializer)
     
 
 from .forms import RecoveryWardSerializer
@@ -707,20 +234,7 @@ from .forms import RecoveryWardSerializer
 @csrf_exempt
 @permission_classes([ HasRolePermission])
 def recovery_ward_data(request):
-    if request.method == 'POST':
-        selected_date = request.data.get('selectedDate')
-        
-        # Check if data for the selected date already exists
-        if RecoveryWard.objects.filter(selectedDate=selected_date).exists():
-            return Response({'error': 'Data already exists for this date.'}, status=status.HTTP_400_BAD_REQUEST)
-        
-        # If no existing data, proceed with saving
-        serializer = RecoveryWardSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    return handle_ward_data_submission(request, RecoveryWard, RecoveryWardSerializer)
     
 
 from .forms import SICUSerializer
@@ -728,35 +242,7 @@ from .forms import SICUSerializer
 @csrf_exempt
 @permission_classes([ HasRolePermission])
 def SICU_data(request):
-    if request.method == 'POST':
-        selected_date = request.data.get('selectedDate')
-        
-        # Check if data for the selected date already exists
-        if SICU.objects.filter(selectedDate=selected_date).exists():
-            return Response({'error': 'Data already exists for this date.'}, status=status.HTTP_400_BAD_REQUEST)
-        
-        # If no existing data, proceed with saving
-        serializer = SICUSerializer(data=request.data)
-        if serializer.is_valid():
-            # Create object but don't save yet
-            obj = serializer.save(commit=False)
-
-            # Get user id from request
-            user_identifier = request.data.get("auth-user-id")
-
-            # Set fields manually (ModelForm cannot receive extra args)
-            if not obj.created_by:
-                obj.created_by = user_identifier
-
-            obj.lastmodified_by = user_identifier
-
-            # Save the model
-            obj.save()
-
-            # serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    return handle_ward_data_submission(request, SICU, SICUSerializer)
     
 
 from .forms import MICUSerializer
@@ -764,35 +250,7 @@ from .forms import MICUSerializer
 @csrf_exempt
 @permission_classes([ HasRolePermission])
 def MICU_data(request):
-    if request.method == 'POST':
-        selected_date = request.data.get('selectedDate')
-        
-        # Check if data for the selected date already exists
-        if MICU.objects.filter(selectedDate=selected_date).exists():
-            return Response({'error': 'Data already exists for this date.'}, status=status.HTTP_400_BAD_REQUEST)
-        
-        # If no existing data, proceed with saving
-        serializer = MICUSerializer(data=request.data)
-        if serializer.is_valid():
-            # Create object but don't save yet
-            obj = serializer.save(commit=False)
-
-            # Get user id from request
-            user_identifier = request.data.get("auth-user-id")
-
-            # Set fields manually (ModelForm cannot receive extra args)
-            if not obj.created_by:
-                obj.created_by = user_identifier
-
-            obj.lastmodified_by = user_identifier
-
-            # Save the model
-            obj.save()
-
-            # serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    return handle_ward_data_submission(request, MICU, MICUSerializer)
 
     
 from .forms import NICUSerializer
@@ -800,35 +258,7 @@ from .forms import NICUSerializer
 @csrf_exempt
 @permission_classes([ HasRolePermission])
 def NICU_data(request):
-    if request.method == 'POST':
-        selected_date = request.data.get('selectedDate')
-        
-        # Check if data for the selected date already exists
-        if NICU.objects.filter(selectedDate=selected_date).exists():
-            return Response({'error': 'Data already exists for this date.'}, status=status.HTTP_400_BAD_REQUEST)
-        
-        # If no existing data, proceed with saving
-        serializer = NICUSerializer(data=request.data)
-        if serializer.is_valid():
-            # Create object but don't save yet
-            obj = serializer.save(commit=False)
-
-            # Get user id from request
-            user_identifier = request.data.get("auth-user-id")
-
-            # Set fields manually (ModelForm cannot receive extra args)
-            if not obj.created_by:
-                obj.created_by = user_identifier
-
-            obj.lastmodified_by = user_identifier
-
-            # Save the model
-            obj.save()
-
-            # serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    return handle_ward_data_submission(request, NICU, NICUSerializer)
     
 
 from .forms import FirstFloorRawDataSerializer
@@ -1675,13 +1105,9 @@ from .models import (
 
 def get_filtered_data(model, year, month, date_field='selectedDate'):
     month_str = f"{int(month):02}"  # ensures '04' format
-    return [
-        model_to_dict(obj)
-        for obj in model.objects.all()
-        if getattr(obj, date_field) and
-           getattr(obj, date_field)[:4] == str(year) and
-           getattr(obj, date_field)[5:7] == month_str
-    ]
+    prefix = f"{year}-{month_str}"
+    queryset = model.objects.filter(**{f"{date_field}__startswith": prefix})
+    return [model_to_dict(obj) for obj in queryset]
 
 
 def get_formula_data(request):
