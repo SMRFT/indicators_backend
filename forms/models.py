@@ -1167,6 +1167,21 @@ class TrainingFeedBack(AuditModel):
 # models.py
 from django.db import models
 from djongo import models as djongo_models
+
+_mongo_client = None
+
+def _get_shared_mongo_db():
+    global _mongo_client
+    from django.conf import settings
+    import pymongo
+    
+    db_config = settings.DATABASES['default']
+    if _mongo_client is None:
+        host = db_config.get('CLIENT', {}).get('host', 'mongodb://localhost:27017/')
+        _mongo_client = pymongo.MongoClient(host)
+    
+    db_name = db_config.get('NAME', 'Indicators')
+    return _mongo_client[db_name]
 class MockDrill(AuditModel):
     id = models.CharField(max_length=100)
     name = models.CharField(max_length=100)
@@ -1245,13 +1260,7 @@ class IncidentReport(AuditModel):
                         except: pass
                 return v
             
-            from django.conf import settings
-            import pymongo
-            db_config = settings.DATABASES['default']
-            host = db_config.get('CLIENT', {}).get('host', 'mongodb://localhost:27017/')
-            db_name = db_config.get('NAME', 'Indicators')
-            client = pymongo.MongoClient(host)
-            db = client[db_name]
+            db = _get_shared_mongo_db()
             
             db['forms_incidentreport'].update_one(
                 {'$or': [{'incidentNo': self.incidentNo}, {'_id': self.incidentNo}]},
@@ -1329,13 +1338,7 @@ class IncidentClassification(AuditModel):
                         except: pass
                 return v
             
-            from django.conf import settings
-            import pymongo
-            db_config = settings.DATABASES['default']
-            host = db_config.get('CLIENT', {}).get('host', 'mongodb://localhost:27017/')
-            db_name = db_config.get('NAME', 'Indicators')
-            client = pymongo.MongoClient(host)
-            db = client[db_name]
+            db = _get_shared_mongo_db()
             
             db['forms_incidentclassification'].update_one(
                 {'$or': [{'id': self.id}, {'_id': self.id}]},

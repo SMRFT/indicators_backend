@@ -8,8 +8,10 @@ from .views import emergency_room_data,MRD_data,recovery_ward_data,chemo_ward_da
 from .views import firstfloor_rawdata,firstsuit_rawdata,secondfloor_rawdata,secondsuit_rawdata,thirdfloor_rawdata,recoveryward_rawdata
 from .views import SICU_data,MICU_data,NICU_data,micu_rawdata,nicu_rawdata,sicu_rawdata,chemoward_rawdata,emergencyroom_rawdata, opd_rawdata
 from .views import availabilityofroomsandbeds,get_export_data,update_export_data,delete_export_data,get_export_rawdata,update_export_rawdata,get_formula_data
+from .formula_aggregations import get_aggregated_formula_data
 
 urlpatterns = [
+    path('formula-aggregated-data/', get_aggregated_formula_data, name = 'get_aggregated_formula_data'),
     path('registration/',registration, name = 'registration'),
     path('login/', login, name = 'login'),
     path('FrontOffice/', frontoffice_data, name = 'frontoffice_data'),

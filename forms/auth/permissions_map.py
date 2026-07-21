@@ -45,6 +45,7 @@ PAGE_MAPPING={
 
     '/_b_a_c_k_e_n_d/Indicators/availabilityofroomsandbeds/<str:ward>/': 'SHI-P-AVAIL',
     '/_b_a_c_k_e_n_d/Indicators/formula-data/': 'SHI-P-FORM',
+    '/_b_a_c_k_e_n_d/Indicators/formula-aggregated-data/': 'SHI-P-FORM',
     '/_b_a_c_k_e_n_d/Indicators/HandHygenieAudit/': 'SHI-P-HAND',
     '/_b_a_c_k_e_n_d/Indicators/HandHygieneReport/': 'SHI-P-HANDR',
     '/_b_a_c_k_e_n_d/Indicators/TrainingFeedBack/': 'SHI-P-TRAIN',
@@ -125,6 +126,7 @@ PAGE_MAPPING={
     '/update-export_rawdata/': 'SHI-P-UPDRAW',
     '/availabilityofroomsandbeds/<str:ward>/': 'SHI-P-AVAIL',
     '/formula-data/': 'SHI-P-FORM',
+    '/formula-aggregated-data/': 'SHI-P-FORM',
 
 #incharge
     '/HandHygenieAudit/': 'SHI-P-HAND',

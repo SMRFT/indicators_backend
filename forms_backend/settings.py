@@ -20,22 +20,20 @@ load_dotenv()
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-acy_of3_cejc@5dv_5vlsa-=uo==x&i2z=_e29bt%s6y9r(h#w'
+import os
+
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure-acy_of3_cejc@5dv_5vlsa-=uo==x&i2z=_e29bt%s6y9r(h#w')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DJANGO_DEBUG', 'True').lower() == 'true'
 
-# ALLOWED_HOSTS = []
-
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS', '*').split(',')
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',  # Add your frontend URL here
 ]
 
-# Optional: Allow credentials (cookies, authorization headers, etc.) to be included in cross-origin requests
-CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOW_ALL_ORIGINS = True  # Allow requests from all origins
+CORS_ALLOW_CREDENTIALS = os.getenv('CORS_ALLOW_CREDENTIALS', 'True').lower() == 'true'
+CORS_ALLOW_ALL_ORIGINS = os.getenv('CORS_ALLOW_ALL_ORIGINS', 'True').lower() == 'true'
 
 # Application definition
 
@@ -154,6 +152,8 @@ STATIC_URL = '/static/'
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+SILENCED_SYSTEM_CHECKS = ['models.E018']
 
 
 CORS_ALLOW_HEADERS = [

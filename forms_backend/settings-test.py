@@ -150,3 +150,25 @@ STATIC_URL = '/static/'
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+SILENCED_SYSTEM_CHECKS = ['models.E018']
+
+CORS_ALLOW_HEADERS = [
+    'Authorization',
+    'content-type',
+    'accept',
+    'origin',
+    'x-requested-with',
+]
+
+CORS_EXPOSE_HEADERS = [
+    'Authorization',
+]
+
+class DisableMigrations:
+    def __contains__(self, item):
+        return True
+    def __getitem__(self, item):
+        return None
+
+MIGRATION_MODULES = DisableMigrations()
