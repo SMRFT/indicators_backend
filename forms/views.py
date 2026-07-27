@@ -19,27 +19,20 @@ def handle_ward_data_submission(request, model_class, serializer_class):
         # If no existing data, proceed with saving
         serializer = serializer_class(data=request.data)
         if serializer.is_valid():
-            # Create object but don't save yet
-            obj = serializer.save(commit=False)
-
             # Get user id from request
             user_identifier = request.data.get("auth-user-id")
 
-            # Set fields manually
-            try:
-                if hasattr(obj, 'created_by') and not obj.created_by:
-                    obj.created_by = user_identifier
-                if hasattr(obj, 'lastmodified_by'):
-                    obj.lastmodified_by = user_identifier
-            except AttributeError:
-                pass
-
-            # Save the model
-            obj.save()
+            # Pass audit fields via save() kwargs — DRF ModelSerializer supports extra kwargs
+            serializer.save(
+                created_by=user_identifier,
+                lastmodified_by=user_identifier
+            )
 
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 
 from .forms import RegisterSerializer
 @api_view(['POST'])
@@ -1058,7 +1051,15 @@ def HandHygenieAuditView(request):
 @api_view(['GET'])
 @permission_classes([ HasRolePermission])
 def get_all_hand_hygiene_data(request):
+    start_date = request.GET.get('startDate') or request.GET.get('fromDate') or request.GET.get('from_date')
+    end_date = request.GET.get('endDate') or request.GET.get('toDate') or request.GET.get('to_date')
+
     audits = HandHygenieAudit.objects.all()
+    if start_date:
+        audits = audits.filter(selectedDate__gte=start_date)
+    if end_date:
+        audits = audits.filter(selectedDate__lte=end_date)
+
     serializer = HandHygenieAuditSerializer(audits, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -1088,7 +1089,15 @@ def TrainingFeedBackView(request):
 @api_view(['GET'])
 @permission_classes([ HasRolePermission])
 def get_all_training_feedback(request):
+    start_date = request.GET.get('startDate') or request.GET.get('fromDate') or request.GET.get('from_date')
+    end_date = request.GET.get('endDate') or request.GET.get('toDate') or request.GET.get('to_date')
+
     audits = TrainingFeedBack.objects.all()
+    if start_date:
+        audits = audits.filter(selectedDate__gte=start_date)
+    if end_date:
+        audits = audits.filter(selectedDate__lte=end_date)
+
     serializer = TrainingFeedBackSerializer(audits, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -1158,17 +1167,7 @@ from .forms import PharmacySerializer
 @csrf_exempt
 @permission_classes([ HasRolePermission])
 def Pharmacy_data(request):
-    if request.method == 'POST':
-        selected_date = request.data.get('selectedDate')
-        # Check if data for the selected date already exists
-        if RecoveryWard.objects.filter(selectedDate=selected_date).exists():
-            return Response({'error': 'Data already exists for this date.'}, status=status.HTTP_400_BAD_REQUEST)
-        # If no existing data, proceed with saving
-        serializer = PharmacySerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    return handle_ward_data_submission(request, Pharmacy, PharmacySerializer)
 
    
 from rest_framework.decorators import api_view
@@ -1176,13 +1175,10 @@ from rest_framework.response import Response
 from .models import MockDrill
 from .forms import MockDrillSerializer
 @api_view(['POST'])
+@csrf_exempt
 @permission_classes([ HasRolePermission])
 def create_mockdrill(request):
-    serializer = MockDrillSerializer(data=request.data)
-    if serializer.is_valid():
-        serializer.save()
-        return Response(serializer.data)
-    return Response(serializer.errors, status=400)
+    return handle_ward_data_submission(request, MockDrill, MockDrillSerializer)
 
 
 from .models import IncidentReport, SupervisorInvestigation, IncidentClassification

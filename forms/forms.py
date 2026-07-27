@@ -16,156 +16,178 @@ class LoginSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class WardSerializerMixin:
+    """
+    Mixin for all ward form serializers.
+    - Allows blank strings for all CharField fields (DRF is stricter than ModelForm)
+    - Makes all non-primary-key fields optional so partial data can be saved
+    """
+    def get_fields(self):
+        fields = super().get_fields()
+        pk_field_name = (
+            self.Meta.model._meta.pk.name
+            if hasattr(self, 'Meta') and hasattr(self.Meta, 'model') and self.Meta.model._meta.pk
+            else None
+        )
+        for field_name, field in fields.items():
+            if hasattr(field, 'allow_blank'):
+                field.allow_blank = True
+            if field_name != pk_field_name:
+                field.required = False
+        return fields
+
+
 from .models import FrontOffice
-class FrontOfficeSerializer(forms.ModelForm):
+class FrontOfficeSerializer(WardSerializerMixin, serializers.ModelSerializer):
     class Meta:
         model = FrontOffice
         fields = '__all__'
 
 
 from .models import FirstFloor
-class FirstFloorSerializer(forms.ModelForm):
+class FirstFloorSerializer(WardSerializerMixin, serializers.ModelSerializer):
     class Meta:
         model = FirstFloor
         fields = '__all__'
 
 
 from .models import SecondFloor
-class SecondFloorSerializer(forms.ModelForm):
+class SecondFloorSerializer(WardSerializerMixin, serializers.ModelSerializer):
     class Meta:
         model = SecondFloor
         fields = '__all__'
 
 
 from .models import ThirdFloor
-class ThirdFloorSerializer(forms.ModelForm):
+class ThirdFloorSerializer(WardSerializerMixin, serializers.ModelSerializer):
     class Meta:
         model = ThirdFloor
         fields = '__all__'
 
 from .models import FirstSuit
-class FirstSuitSerializer(forms.ModelForm):
+class FirstSuitSerializer(WardSerializerMixin, serializers.ModelSerializer):
     class Meta:
         model = FirstSuit
         fields = '__all__'
 
 
 from .models import SecondSuit
-class SecondSuitSerializer(forms.ModelForm):
+class SecondSuitSerializer(WardSerializerMixin, serializers.ModelSerializer):
     class Meta:
         model = SecondSuit
         fields = '__all__'
 
 
 from .models import Lab
-class LabSerializer(forms.ModelForm):
+class LabSerializer(WardSerializerMixin, serializers.ModelSerializer):
     class Meta:
         model = Lab
         fields = '__all__'
 
 
 from .models import CT
-class CTSerializer(forms.ModelForm):
+class CTSerializer(WardSerializerMixin, serializers.ModelSerializer):
     class Meta:
         model = CT
         fields = '__all__'
 
 
 from .models import MRI
-class MRISerializer(forms.ModelForm):
+class MRISerializer(WardSerializerMixin, serializers.ModelSerializer):
     class Meta:
         model = MRI
         fields = '__all__'
 
 
 from .models import Xray
-class XraySerializer(forms.ModelForm):
+class XraySerializer(WardSerializerMixin, serializers.ModelSerializer):
     class Meta:
         model = Xray
         fields = '__all__'
 
 
 from .models import OPD
-class OPDSerializer(forms.ModelForm):
+class OPDSerializer(WardSerializerMixin, serializers.ModelSerializer):
     class Meta:
         model = OPD
         fields = '__all__'
 
 
 from .models import OT
-class OTSerializer(forms.ModelForm):
+class OTSerializer(WardSerializerMixin, serializers.ModelSerializer):
     class Meta:
         model = OT
         fields = '__all__'
 
 
 from .models import HR
-class HRSerializer(forms.ModelForm):
+class HRSerializer(WardSerializerMixin, serializers.ModelSerializer):
     class Meta:
         model = HR
         fields = '__all__'
 
 
 from .models import Physiotherapy
-class PhysiotherapySerializer(forms.ModelForm):
+class PhysiotherapySerializer(WardSerializerMixin, serializers.ModelSerializer):
     class Meta:
         model = Physiotherapy
         fields = '__all__'
 
 
 from .models import Dialysis
-class DialysisSerializer(forms.ModelForm):
+class DialysisSerializer(WardSerializerMixin, serializers.ModelSerializer):
     class Meta:
         model = Dialysis
         fields = '__all__'
 
 
 from .models import EmergencyRoom
-class EmergencyRoomSerializer(forms.ModelForm):
+class EmergencyRoomSerializer(WardSerializerMixin, serializers.ModelSerializer):
     class Meta:
         model = EmergencyRoom
         fields = '__all__'
 
 
 from .models import MRD
-class MRDSerializer(forms.ModelForm):
+class MRDSerializer(WardSerializerMixin, serializers.ModelSerializer):
     class Meta:
         model = MRD
         fields = '__all__'
 
 
 from .models import ChemoWard
-class ChemoWardSerializer(forms.ModelForm):
+class ChemoWardSerializer(WardSerializerMixin, serializers.ModelSerializer):
     class Meta:
         model = ChemoWard
         fields = '__all__'
 
 
 from .models import RecoveryWard
-class RecoveryWardSerializer(forms.ModelForm):
+class RecoveryWardSerializer(WardSerializerMixin, serializers.ModelSerializer):
     class Meta:
         model = RecoveryWard
         fields = '__all__'
 
 
 from .models import SICU
-class SICUSerializer(forms.ModelForm):
+class SICUSerializer(WardSerializerMixin, serializers.ModelSerializer):
     class Meta:
         model = SICU
         fields = '__all__'
 
 
 from .models import MICU
-class MICUSerializer(forms.ModelForm):
+class MICUSerializer(WardSerializerMixin, serializers.ModelSerializer):
     class Meta:
         model = MICU
         fields = '__all__'
 
 from .models import NICU
-class NICUSerializer(forms.ModelForm):
+class NICUSerializer(WardSerializerMixin, serializers.ModelSerializer):
     class Meta:
         model = NICU
         fields = '__all__'
+
 
 
 from .models import FirstFloorRawData
@@ -272,7 +294,7 @@ class OPDRawDataSerializer(serializers.ModelSerializer):
         return str(obj.id)  # Convert ObjectId to string
 
 from .models import AvailabilityOfRoomsAndBeds
-class AvailabilityOfRoomsAndBedsSerializer(forms.ModelForm):
+class AvailabilityOfRoomsAndBedsSerializer(serializers.ModelSerializer):
     class Meta:
         model = AvailabilityOfRoomsAndBeds
         fields = "__all__"
